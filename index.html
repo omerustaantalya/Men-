@@ -10,30 +10,21 @@
         .header { background-color: #bc1818; color: white; text-align: center; padding: 25px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
         .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; font-weight: 300; opacity: 0.9; font-size: 13px; }
-        
         .container { padding: 15px; max-width: 500px; margin: auto; }
         .section-title { color: #bc1818; border-bottom: 2px solid #bc1818; padding-bottom: 5px; margin: 30px 0 15px; font-size: 20px; font-weight: bold; display: flex; align-items: center; }
         .section-title i { margin-right: 10px; }
-
         .menu-item { background: white; margin-bottom: 25px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #eee; display: flex; flex-direction: column; }
         .menu-item img { width: 100%; height: auto; display: block; object-fit: cover; background-color: #eee; min-height: 180px; }
-        
         .details { padding: 18px; }
         .name { font-weight: bold; font-size: 19px; color: #bc1818; display: block; margin-bottom: 12px; line-height: 1.2; }
-        
         .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 5px; flex-wrap: wrap; }
         .price-tag { background: #bc1818; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 16px; white-space: nowrap; }
         .price-box { text-align: center; display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; }
         .price-label { font-size: 10px; color: #777; text-transform: uppercase; display: block; margin-bottom: 2px; }
-        
-        .description { font-size: 13px; color: #555; line-height: 1.5; font-style: italic; border-top: 1px solid #f0f0f0; padding-top: 10px; margin-top: 10px; }
-
         .action-buttons { position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; transform: translateX(-50%); background: white; display: flex; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); gap: 10px; z-index: 1001; }
         .btn { flex: 1; text-decoration: none; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .btn-map { background-color: #4285F4; }
         .btn-whatsapp { background-color: #25D366; }
-        .btn i { margin-right: 8px; }
-
         .footer { text-align: center; padding: 40px 20px 100px; color: #999; font-size: 11px; }
     </style>
 </head>
@@ -45,19 +36,12 @@
     </div>
 
     <div class="container">
-        
         <div class="section-title"><i class="fas fa-utensils"></i> Porsiyon Menüler</div>
-        
         <div class="menu-item"><img src="1kgporsiyon.jpg" alt="1 KG"><div class="details"><span class="name">1 KG Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">600₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">450₺</span></div></div></div></div>
-
         <div class="menu-item"><img src="750grporsiyon.jpg" alt="750 GR"><div class="details"><span class="name">750 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">500₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">350₺</span></div></div></div></div>
-
         <div class="menu-item"><img src="650grporsiyon.jpg" alt="650 GR"><div class="details"><span class="name">650 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">450₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">325₺</span></div></div></div></div>
-
         <div class="menu-item"><img src="500grporsiyon.jpg" alt="500 GR"><div class="details"><span class="name">500 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">350₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">300₺</span></div></div></div></div>
-
         <div class="menu-item"><img src="400grporsiyon.jpg" alt="400 GR"><div class="details"><span class="name">400 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">300₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">250₺</span></div></div></div></div>
-
         <div class="menu-item"><img src="200grporsiyon.jpg" alt="200 GR"><div class="details"><span class="name">200 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">200₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">175₺</span></div></div></div></div>
 
         <div class="section-title"><i class="fas fa-bread-slice"></i> Dürüm Çeşitleri</div>
@@ -78,8 +62,9 @@
         <div class="section-title"><i class="fas fa-glass-water"></i> İçecekler</div>
         <div class="menu-item"><img src="Küçükayran.jpg" alt="Küçük Ayran"><div class="details"><div class="price-row"><span>Küçük Ayran</span><span class="price-tag">35₺</span></div></div></div>
         <div class="menu-item"><img src="Büyükayran.jpg" alt="Büyük Ayran"><div class="details"><div class="price-row"><span>Büyük Ayran</span><span class="price-tag">50₺</span></div></div></div>
-        <div class="menu-item"><img src="Litrelikayran.jpg" alt="L Ayran"><div class="details"><div class="price-row"><span>Litrelik Ayran</span><span class="price-tag">100₺</span></div></div></div>
-        <div class="menu-item"><img src="Şalgam.jpg" alt="Şalgam"><div class="details"><div class="price-row"><span>Şalgam</span><span class="price-tag">35₺</span></div><div class="price-row" style="margin-top:10px;"><span>Litrelik Şalgam</span><span class="price-tag">100₺</span></div></div></div>
+        <div class="menu-item"><img src="Litrelikayran.jpg" alt="Litrelik Ayran"><div class="details"><div class="price-row"><span>Litrelik Ayran (1L)</span><span class="price-tag">100₺</span></div></div></div>
+        <div class="menu-item"><img src="Şalgam.jpg" alt="Şalgam"><div class="details"><div class="price-row"><span class="name">Acılı / Acısız Şalgam</span><span class="price-tag">35₺</span></div></div></div>
+        <div class="menu-item"><img src="Litreliksalgam.jpg" alt="L Şalgam"><div class="details"><div class="price-row"><span class="name">Litrelik Şalgam</span><span class="price-tag">100₺</span></div></div></div>
 
     </div>
 
