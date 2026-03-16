@@ -5,30 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Çiğköfteci Ömer Usta Menü</title>
     <style>
-        /* Modern ve Mobil Uyumlu Stil */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f8f8; color: #333; }
-        .header { background-color: #bc1818; color: white; text-align: center; padding: 25px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .header h1 { margin: 0; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; font-weight: 300; opacity: 0.9; font-size: 14px; }
+        .header { background-color: #bc1818; color: white; text-align: center; padding: 25px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
+        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 5px 0 0; font-weight: 300; opacity: 0.9; font-size: 13px; }
         
         .container { padding: 15px; max-width: 500px; margin: auto; }
         
-        /* Menü Kartı Tasarımı */
+        .section-title { color: #bc1818; border-left: 5px solid #bc1818; padding-left: 10px; margin: 20px 0; font-size: 20px; font-weight: bold; }
+
         .menu-item { background: white; margin-bottom: 25px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #eee; }
-        .menu-item img { width: 100%; height: auto; display: block; object-fit: cover; }
+        .menu-item img { width: 100%; height: auto; display: block; object-fit: cover; background-color: #eee; min-height: 200px; }
         
         .details { padding: 18px; }
-        .name { font-weight: bold; font-size: 20px; color: #bc1818; display: block; margin-bottom: 12px; text-align: center; }
+        .name { font-weight: bold; font-size: 19px; color: #bc1818; display: block; margin-bottom: 12px; text-align: center; }
         
-        /* Fiyat Alanı Tasarımı */
         .price-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; padding: 10px 0; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
         .price-box { text-align: center; }
-        .price-label { font-size: 11px; color: #777; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .price-tag { background: #bc1818; color: white; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 17px; }
-        .price-tag.secondary { background: #666; font-size: 15px; } /* Garnitürsüz olanı biraz daha geri plana attık */
+        .price-label { font-size: 10px; color: #777; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .price-tag { background: #bc1818; color: white; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 16px; }
+        .price-tag.secondary { background: #666; font-size: 14px; }
         
-        /* Açıklama Alanı */
-        .description { font-size: 14px; color: #555; line-height: 1.5; text-align: center; font-style: italic; }
+        .description { font-size: 13px; color: #555; line-height: 1.5; text-align: center; font-style: italic; }
         
         .footer { text-align: center; padding: 30px 20px; color: #999; font-size: 11px; letter-spacing: 1px; }
     </style>
@@ -41,30 +39,82 @@
     </div>
 
     <div class="container">
+        
+        <div class="section-title">Porsiyon Menüler</div>
 
         <div class="menu-item">
-            <img src="1kgporsiyon.jpg" alt="1 KG Porsiyon Çiğköfte">
+            <img src="1kgporsiyon.jpg" alt="1 KG Porsiyon">
             <div class="details">
                 <span class="name">1 KG Porsiyon Çiğköfte</span>
-                
                 <div class="price-row">
-                    <div class="price-box">
-                        <span class="price-label">Garnitürlü (Lavaşlı)</span>
-                        <span class="price-tag">600₺</span>
-                    </div>
-                    <div class="price-box">
-                        <span class="price-label">Garnitürsüz</span>
-                        <span class="price-tag secondary">450₺</span>
-                    </div>
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">600₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">450₺</span></div>
                 </div>
-
-                <div class="description">
-                    İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.
-                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
             </div>
         </div>
 
+        <div class="menu-item">
+            <img src="750grporsiyon.jpg" alt="750 GR Porsiyon">
+            <div class="details">
+                <span class="name">750 GR Porsiyon Çiğköfte</span>
+                <div class="price-row">
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">500₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">350₺</span></div>
+                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
+            </div>
         </div>
+
+        <div class="menu-item">
+            <img src="650grporsiyon.jpg" alt="650 GR Porsiyon">
+            <div class="details">
+                <span class="name">650 GR Porsiyon Çiğköfte</span>
+                <div class="price-row">
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">450₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">325₺</span></div>
+                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <img src="500grporsiyon.jpg" alt="500 GR Porsiyon">
+            <div class="details">
+                <span class="name">500 GR Porsiyon Çiğköfte</span>
+                <div class="price-row">
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">350₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">300₺</span></div>
+                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <img src="400grporsiyon.jpg" alt="400 GR Porsiyon">
+            <div class="details">
+                <span class="name">400 GR Porsiyon Çiğköfte</span>
+                <div class="price-row">
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">300₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">250₺</span></div>
+                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <img src="200grporsiyon.jpg" alt="200 GR Porsiyon">
+            <div class="details">
+                <span class="name">200 GR Porsiyon Çiğköfte</span>
+                <div class="price-row">
+                    <div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">200₺</span></div>
+                    <div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag secondary">175₺</span></div>
+                </div>
+                <div class="description">İçerik: Marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.</div>
+            </div>
+        </div>
+
+    </div>
 
     <div class="footer">
         © 2026 ÇİĞKÖFTECİ ÖMER USTA<br>
