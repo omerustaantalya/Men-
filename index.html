@@ -267,10 +267,35 @@
         }
         .quick-nav a:active,
         .quick-nav button:active { transform: translateY(1px); }
+        .quick-nav .q-icon { margin-right: 6px; }
+        .quick-nav .q-label-short { display: none; }
 
         @media (max-width: 900px) {
-          .quick-nav { left: 6px; max-width: 124px; }
-          .quick-nav a, .quick-nav button { font-size: 11px; padding: 7px 8px; }
+          .quick-nav {
+            position: static;
+            transform: none;
+            left: auto;
+            top: auto;
+            max-width: none;
+            width: calc(100% - 20px);
+            margin: 10px auto 0;
+            padding: 0 2px 4px;
+            flex-direction: row;
+            gap: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+          .quick-nav a,
+          .quick-nav button {
+            flex: 0 0 auto;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 11px;
+            padding: 7px 9px;
+          }
+          .quick-nav .q-icon { margin-right: 4px; }
+          .quick-nav .q-label-long { display: none; }
+          .quick-nav .q-label-short { display: inline; }
         }
     </style>
 </head>
@@ -282,12 +307,12 @@
     </div>
 
     <nav class="quick-nav" aria-label="Hızlı kategori geçişi">
-        <a href="#porsiyon-menuler">Porsiyon Menüler</a>
-        <a href="#durum-cesitleri">Dürüm Çeşitleri</a>
-        <a href="#susi">Suşi</a>
-        <a href="#midye-dolma">Midye Dolma</a>
-        <a href="#icecekler">İçecekler</a>
-        <button id="scrollTopBtn" type="button">Yukarı Çık</button>
+        <a href="#porsiyon-menuler"><i class="fas fa-utensils q-icon"></i><span class="q-label-long">Porsiyon Menüler</span><span class="q-label-short">Porsiyon</span></a>
+        <a href="#durum-cesitleri"><i class="fas fa-bread-slice q-icon"></i><span class="q-label-long">Dürüm Çeşitleri</span><span class="q-label-short">Dürüm</span></a>
+        <a href="#susi"><i class="fas fa-circle-notch q-icon"></i><span class="q-label-long">Suşi</span><span class="q-label-short">Suşi</span></a>
+        <a href="#midye-dolma"><i class="fas fa-fish q-icon"></i><span class="q-label-long">Midye Dolma</span><span class="q-label-short">Midye</span></a>
+        <a href="#icecekler"><i class="fas fa-glass-water q-icon"></i><span class="q-label-long">İçecekler</span><span class="q-label-short">İçecek</span></a>
+        <button id="scrollTopBtn" type="button"><i class="fas fa-arrow-up q-icon"></i><span class="q-label-long">Yukarı Çık</span><span class="q-label-short">Yukarı</span></button>
     </nav>
 
     <div class="container">
