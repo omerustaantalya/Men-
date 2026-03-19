@@ -99,7 +99,30 @@
 
         /* Ödeme şekli */
         .payment-section { padding: 10px 16px 0; }
-        .payment-title { font-size: 12px; color: #777; font-weight: 900; text-transform: uppercase; letter-spacing: .2px; margin-bottom: 8px; }
+        .payment-title {
+            font-size: 12px;
+            color: #777;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .payment-warning {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: none;
+            letter-spacing: 0;
+            color: #bc1818;
+            animation: paymentWarnBlink 1.25s ease-in-out infinite;
+        }
+        @keyframes paymentWarnBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .35; }
+        }
         .payment-buttons { display: flex; gap: 10px; }
         .payment-btn {
             flex: 1;
@@ -239,13 +262,15 @@
         .footer { text-align: center; padding: 40px 20px 100px; color: #999; font-size: 11px; }
 
         .quick-nav {
-          position: relative;
+          position: sticky;
+          top: 102px;
+          z-index: 999;
           display: flex;
           flex-direction: row;
           gap: 6px;
           width: calc(100% - 20px);
           max-width: 500px;
-          margin: 10px auto 0;
+          margin: 8px auto 0;
           padding: 0 2px 4px;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
@@ -267,6 +292,13 @@
           box-shadow: 0 8px 20px rgba(0,0,0,0.08);
           backdrop-filter: blur(4px);
           -webkit-backdrop-filter: blur(4px);
+          transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+        .quick-nav.scrolled a,
+        .quick-nav.scrolled button {
+          background: rgba(255,255,255,0.62);
+          border-color: rgba(188,24,24,0.14);
+          box-shadow: 0 6px 14px rgba(0,0,0,0.05);
         }
         .quick-nav a:active,
         .quick-nav button:active { transform: translateY(1px); }
@@ -276,6 +308,7 @@
 
         @media (max-width: 900px) {
           .quick-nav {
+            top: 96px;
             max-width: calc(100% - 20px);
           }
           .quick-nav a,
@@ -441,7 +474,10 @@
         <div id="cartTotal" class="cart-total"></div>
 
         <div id="paymentSection" class="payment-section" aria-label="Ödeme şekli">
-            <div class="payment-title">Ödeme Şekli</div>
+            <div class="payment-title">
+                <span>Ödeme Şekli</span>
+                <span class="payment-warning">Lütfen ödeme şeklinizi seçiniz!</span>
+            </div>
             <div class="payment-buttons">
                 <button id="paymentCashBtn" type="button" class="payment-btn active">Nakit</button>
                 <button id="paymentCardBtn" type="button" class="payment-btn">Kredi Kartı</button>
@@ -577,6 +613,7 @@
                 if (delta > 0 && !cart[cartKey]) {
                     if (!meta) return;
                     cart[cartKey] = {
+                        sectionName: meta.sectionName || "Diğer Ürünler",
                         productName: meta.productName,
                         optionLabel: meta.optionLabel,
                         unitPrice: meta.unitPrice,
@@ -622,6 +659,17 @@
                 if (!details) return;
                 if (card.querySelector(".add-to-cart-wrap")) return;
 
+                const sectionTitleEl = (function () {
+                    let el = card.previousElementSibling;
+                    while (el && !el.classList.contains("section-title")) {
+                        el = el.previousElementSibling;
+                    }
+                    return el;
+                })();
+                const sectionName = sectionTitleEl
+                    ? sectionTitleEl.textContent.replace(/\s+/g, " ").trim()
+                    : "Diğer Ürünler";
+
                 const img = card.querySelector("img");
                 const nameEl = details.querySelector(".name");
                 const productName =
@@ -664,6 +712,7 @@
                     row.dataset.productName = productName;
                     row.dataset.optionLabel = opt.optionLabel;
                     row.dataset.unitPrice = String(opt.unitPrice);
+                    row.dataset.sectionName = sectionName;
 
                     const info = document.createElement("div");
                     info.className = "add-to-cart-opt-info";
@@ -698,14 +747,6 @@
                 details.appendChild(wrap);
 
                 // Bölüme göre bilgilendirme notu ekle (ürünün altına)
-                const sectionTitleEl = (function () {
-                    let el = card.previousElementSibling;
-                    while (el && !el.classList.contains("section-title")) {
-                        el = el.previousElementSibling;
-                    }
-                    return el;
-                })();
-
                 let noteText = "";
                 if (sectionTitleEl && sectionTitleEl.textContent.includes("Porsiyon Menüler")) {
                     noteText = "İçerik marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.";
@@ -777,17 +818,41 @@
 
                 const items = Object.values(cart);
                 items.sort(function (a, b) {
+                    const aSection = a.sectionName || "Diğer Ürünler";
+                    const bSection = b.sectionName || "Diğer Ürünler";
+                    if (aSection !== bSection) return aSection.localeCompare(bSection, "tr");
                     const aTitle = (a.optionLabel && a.optionLabel !== "Standart") ? (a.productName + " - " + a.optionLabel) : a.productName;
                     const bTitle = (b.optionLabel && b.optionLabel !== "Standart") ? (b.productName + " - " + b.optionLabel) : b.productName;
                     return aTitle.localeCompare(bTitle, "tr");
                 });
 
+                const groups = {};
                 items.forEach(function (item) {
-                    const title = item.optionLabel && item.optionLabel !== "Standart"
-                        ? (item.productName + " - " + item.optionLabel)
-                        : item.productName;
-                    const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
-                    lines.push("• " + title + " | Adet: " + item.quantity + " | Tutar: " + formatTL(lineTotal));
+                    const section = item.sectionName || "Diğer Ürünler";
+                    if (!groups[section]) groups[section] = [];
+                    groups[section].push(item);
+                });
+
+                const sectionOrder = ["Porsiyon Menüler", "Dürüm Çeşitleri", "Suşi", "Midye Dolma", "İçecekler", "Diğer Ürünler"];
+                Object.keys(groups)
+                    .sort(function (a, b) {
+                        const ai = sectionOrder.indexOf(a);
+                        const bi = sectionOrder.indexOf(b);
+                        const ao = ai === -1 ? 999 : ai;
+                        const bo = bi === -1 ? 999 : bi;
+                        if (ao !== bo) return ao - bo;
+                        return a.localeCompare(b, "tr");
+                    })
+                    .forEach(function (section) {
+                        lines.push("");
+                        lines.push("[" + section + "]");
+                        groups[section].forEach(function (item) {
+                            const title = item.optionLabel && item.optionLabel !== "Standart"
+                                ? (item.productName + " - " + item.optionLabel)
+                                : item.productName;
+                            const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
+                            lines.push("• " + title + " | Adet: " + item.quantity + " | Tutar: " + formatTL(lineTotal));
+                        });
                 });
 
                 const message = lines.join("\n");
@@ -855,6 +920,7 @@
                     if (!row) return;
                     const key = row.dataset.cartKey;
                     addOrUpdateCart(key, +1, {
+                        sectionName: row.dataset.sectionName,
                         productName: row.dataset.productName,
                         optionLabel: row.dataset.optionLabel,
                         unitPrice: Number(row.dataset.unitPrice) || 0
@@ -916,6 +982,15 @@
                     window.scrollTo({ top: 0, behavior: "smooth" });
                 });
             }
+
+            const quickNav = document.querySelector(".quick-nav");
+            function updateQuickNavOnScroll() {
+                if (!quickNav) return;
+                const y = window.scrollY || window.pageYOffset || 0;
+                quickNav.classList.toggle("scrolled", y > 20);
+            }
+            window.addEventListener("scroll", updateQuickNavOnScroll, { passive: true });
+            updateQuickNavOnScroll();
 
             // Init
             buildAllControls();
