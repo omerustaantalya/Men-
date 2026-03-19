@@ -6,7 +6,7 @@
     <title>Çiğköfteci Ömer Usta Menü</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f8f8; color: #333; padding-bottom: 80px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f8f8; color: #333; padding-bottom: 120px; }
         .header { background-color: #bc1818; color: white; text-align: center; padding: 25px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
         .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; font-weight: 300; opacity: 0.9; font-size: 13px; }
@@ -25,6 +25,75 @@
         .btn { flex: 1; text-decoration: none; color: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .btn-map { background-color: #4285F4; }
         .btn-whatsapp { background-color: #25D366; }
+        .btn-cart { background-color: #bc1818; }
+
+        /* Sepet (JS ile otomatik eklenecek) */
+        .hidden { display: none !important; }
+        :root { --cart-action-bar-height: 68px; }
+
+        .add-to-cart-wrap { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #eee; display: flex; flex-direction: column; gap: 10px; }
+        .add-to-cart-opt-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .add-to-cart-opt-info { display: flex; flex-direction: column; gap: 2px; }
+        .add-to-cart-opt-name { font-weight: bold; color: #bc1818; font-size: 14px; line-height: 1.2; }
+        .add-to-cart-opt-price { font-weight: 800; font-size: 14px; color: #333; }
+        .add-to-cart-opt-actions { display: flex; align-items: center; gap: 10px; }
+        .add-to-cart-add-btn {
+            background: #bc1818; color: white; border: none; padding: 10px 12px; border-radius: 10px;
+            font-weight: 900; cursor: pointer; box-shadow: 0 2px 8px rgba(188,24,24,0.18);
+            transition: transform 0.05s ease;
+        }
+        .add-to-cart-add-btn:active { transform: scale(0.98); }
+        .add-to-cart-qty-controls { display: flex; align-items: center; gap: 10px; }
+        .qty-btn {
+            width: 36px; height: 36px; border-radius: 12px; border: 1px solid #eee; background: #fff;
+            cursor: pointer; font-size: 20px; color: #bc1818; font-weight: 900;
+        }
+        .qty-btn:active { transform: scale(0.98); }
+        .qty-count { min-width: 26px; text-align: center; font-weight: 900; color: #333; }
+
+        #stickyCartBtn { display: none; }
+
+        .cart-drawer {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: var(--cart-action-bar-height);
+            width: calc(100% - 24px);
+            max-width: 500px;
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #eee;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+            z-index: 1002;
+            display: none;
+        }
+        .cart-drawer.open { display: block; }
+        .cart-drawer-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f2f2f2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .cart-title { font-weight: 1000; color: #bc1818; font-size: 16px; }
+        .cart-subtitle { font-size: 12px; color: #666; margin-top: 3px; }
+        .cart-close-btn {
+            border: none; background: #f2f2f2; width: 36px; height: 36px; border-radius: 12px;
+            cursor: pointer; color: #333; font-size: 22px; line-height: 36px; font-weight: 900;
+        }
+        .cart-list { padding: 10px 16px; max-height: 48vh; overflow: auto; }
+        .cart-empty { padding: 18px 0; text-align: center; color: #999; font-weight: 600; }
+        .cart-item-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f6f6f6; }
+        .cart-item-title { font-weight: 1000; color: #bc1818; line-height: 1.2; }
+        .cart-item-sub { color: #777; font-size: 12px; margin-top: 4px; }
+        .cart-qty-controls { display: flex; align-items: center; gap: 10px; }
+        .cart-total { padding: 10px 16px 0; font-weight: 1000; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+        .cart-total-amount { color: #bc1818; }
+        .cart-total-meta { color: #777; font-size: 12px; font-weight: 800; }
+        .cart-bottom { padding-bottom: 16px; }
+        .cart-actions { padding: 12px 16px 0; display: flex; gap: 10px; }
+        .btn-clear { background: #666; }
         .footer { text-align: center; padding: 40px 20px 100px; color: #999; font-size: 11px; }
     </style>
 </head>
@@ -45,16 +114,16 @@
         <div class="menu-item"><img src="200grporsiyon.jpg" alt="200 GR"><div class="details"><span class="name">200 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">200₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">175₺</span></div></div></div></div>
 
         <div class="section-title"><i class="fas fa-bread-slice"></i> Dürüm Çeşitleri</div>
-        <div class="menu-item"><img src="Dürüm100gr.jpg" alt="Dürüm"><div class="details"><div class="price-row"><span class="name">Dürüm (100gr)</span><span class="price-tag">120₺</span></div></div></div>
+        <div class="menu-item"><img src="Durum100gr.jpg" alt="Dürüm"><div class="details"><div class="price-row"><span class="name">Dürüm (100gr)</span><span class="price-tag">120₺</span></div></div></div>
         <div class="menu-item"><img src="Doritoslu.jpg" alt="Doritoslu"><div class="details"><div class="price-row"><span class="name">Doritoslu Dürüm</span><span class="price-tag">140₺</span></div></div></div>
-        <div class="menu-item"><img src="Megadürüm.jpg" alt="Mega"><div class="details"><div class="price-row"><span class="name">Mega Dürüm (120gr)</span><span class="price-tag">140₺</span></div></div></div>
+        <div class="menu-item"><img src="Megadurum.jpg" alt="Mega"><div class="details"><div class="price-row"><span class="name">Mega Dürüm (120gr)</span><span class="price-tag">140₺</span></div></div></div>
         <div class="menu-item"><img src="Doritoslumega.jpg" alt="Doritoslu Mega"><div class="details"><div class="price-row"><span class="name">Doritoslu Mega Dürüm</span><span class="price-tag">160₺</span></div></div></div>
         <div class="menu-item"><img src="Ultra.jpg" alt="Ultra Mega"><div class="details"><div class="price-row"><span class="name">Ultra Mega Dürüm (140gr)</span><span class="price-tag">160₺</span></div></div></div>
         <div class="menu-item"><img src="Doritosluultra.jpg" alt="Doritoslu Ultra"><div class="details"><div class="price-row"><span class="name">Doritoslu Ultra Mega</span><span class="price-tag">180₺</span></div></div></div>
 
         <div class="section-title"><i class="fas fa-circle-notch"></i> Suşi</div>
         <div class="menu-item"><img src="susi.jpg" alt="Suşi"><div class="details"><div class="price-row"><span class="name">Suşi Çiğköfte (170gr)</span><span class="price-tag">200₺</span></div></div></div>
-        <div class="menu-item"><img src="Doritoslusuşi.jpg" alt="Doritoslu Suşi"><div class="details"><div class="price-row"><span class="name">Doritoslu Suşi</span><span class="price-tag">200₺</span></div></div></div>
+        <div class="menu-item"><img src="Doritoslususi.jpg" alt="Doritoslu Suşi"><div class="details"><div class="price-row"><span class="name">Doritoslu Suşi</span><span class="price-tag">200₺</span></div></div></div>
 
         <div class="section-title"><i class="fas fa-fish"></i> Midye Dolma</div>
         <div class="menu-item"><img src="Midye.jpg" alt="Midye"><div class="details"><span class="name">Midye Dolma</span><div class="price-row"><div class="price-box"><span class="price-label">1 Adet</span><span class="price-tag">20₺</span></div><div class="price-box"><span class="price-label">10 Adet</span><span class="price-tag">175₺</span></div></div><div class="price-row"><div class="price-box"><span class="price-label">20 Adet</span><span class="price-tag">300₺</span></div><div class="price-box"><span class="price-label">50 Adet</span><span class="price-tag">700₺</span></div></div></div></div>
@@ -98,10 +167,383 @@
 
     </div>
 
+    <div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+        <div class="cart-drawer-header">
+            <div>
+                <div class="cart-title">Sepet</div>
+                <div id="cartDrawerMeta" class="cart-subtitle">Ürün ekleyin</div>
+            </div>
+            <button id="cartCloseBtn" class="cart-close-btn" type="button" aria-label="Kapat">×</button>
+        </div>
+        <div id="cartItems" class="cart-list"></div>
+        <div id="cartTotal" class="cart-total"></div>
+        <div class="cart-bottom">
+            <div class="cart-actions">
+                <a id="cartWhatsAppLink" class="btn btn-whatsapp hidden" href="#" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Siparişi Onayla
+                </a>
+                <button id="cartClearBtn" class="btn btn-clear" type="button">Temizle</button>
+            </div>
+        </div>
+    </div>
+
     <div class="action-buttons">
         <a href="https://www.google.com/maps/dir/?api=1&destination=36.89159399505107,30.71851172734922" class="btn btn-map" target="_blank"><i class="fas fa-location-dot"></i> Hemen Yol Tarifi Al</a>
-        <a href="https://wa.me/905412512189" class="btn btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> Sipariş Ver</a>
+        <button id="stickyCartBtn" class="btn btn-cart" type="button">
+            <i class="fas fa-shopping-cart"></i> Sepeti Gör <span id="stickyCartMeta"></span>
+        </button>
     </div>
     <div class="footer">© 2026 ÇİĞKÖFTECİ ÖMER USTA - Yenigün Şubesi</div>
+
+    <script>
+        (function () {
+            const CART_KEY = "omerusta_cart_v1";
+            const WHATSAPP_NUMBER = "905412512189";
+
+            const els = {
+                stickyCartBtn: document.getElementById("stickyCartBtn"),
+                stickyCartMeta: document.getElementById("stickyCartMeta"),
+                cartDrawer: document.getElementById("cartDrawer"),
+                cartDrawerMeta: document.getElementById("cartDrawerMeta"),
+                cartItems: document.getElementById("cartItems"),
+                cartTotal: document.getElementById("cartTotal"),
+                cartWhatsAppLink: document.getElementById("cartWhatsAppLink"),
+                cartClearBtn: document.getElementById("cartClearBtn"),
+                cartCloseBtn: document.getElementById("cartCloseBtn")
+            };
+
+            let cart = loadCart();
+
+            function parseTL(text) {
+                if (!text) return 0;
+                const cleaned = String(text).replace(/₺/g, "").trim();
+                const num = cleaned.replace(/[^\d.,]/g, "").replace(/\./g, "").replace(",", ".");
+                const v = parseFloat(num);
+                return Number.isFinite(v) ? Math.round(v) : 0;
+            }
+
+            function formatTL(value) {
+                const n = Math.round(Number(value) || 0);
+                return n + "₺";
+            }
+
+            function normalizeKey(str) {
+                const map = { "ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u" };
+                return String(str || "")
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[çğıöşü]/g, function (m) { return map[m] || m; })
+                    .replace(/[^a-z0-9]+/g, "_")
+                    .replace(/^_+|_+$/g, "");
+            }
+
+            function loadCart() {
+                try {
+                    const raw = localStorage.getItem(CART_KEY);
+                    if (!raw) return {};
+                    const parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === "object" ? parsed : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveCart(nextCart) {
+                try {
+                    localStorage.setItem(CART_KEY, JSON.stringify(nextCart));
+                } catch (e) { }
+            }
+
+            function cartCount() {
+                return Object.values(cart).reduce(function (s, item) { return s + (item.quantity || 0); }, 0);
+            }
+
+            function cartTotal() {
+                return Object.values(cart).reduce(function (s, item) {
+                    return s + (item.unitPrice || 0) * (item.quantity || 0);
+                }, 0);
+            }
+
+            function escapeHtml(str) {
+                return String(str).replace(/[&<>"']/g, function (c) {
+                    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+                });
+            }
+
+            function addOrUpdateCart(cartKey, delta, meta) {
+                if (delta > 0 && !cart[cartKey]) {
+                    if (!meta) return;
+                    cart[cartKey] = {
+                        productName: meta.productName,
+                        optionLabel: meta.optionLabel,
+                        unitPrice: meta.unitPrice,
+                        quantity: 0
+                    };
+                }
+                if (!cart[cartKey]) return;
+
+                cart[cartKey].quantity = (cart[cartKey].quantity || 0) + delta;
+                if (cart[cartKey].quantity <= 0) delete cart[cartKey];
+
+                saveCart(cart);
+            }
+
+            function updateSticky() {
+                const count = cartCount();
+                const total = cartTotal();
+
+                if (count > 0) {
+                    els.stickyCartBtn.style.display = "flex";
+                    els.stickyCartMeta.textContent = "(" + count + " ürün - " + formatTL(total) + ")";
+                } else {
+                    els.stickyCartBtn.style.display = "none";
+                    els.stickyCartMeta.textContent = "";
+                }
+            }
+
+            function openCartDrawer() {
+                els.cartDrawer.classList.add("open");
+                els.cartDrawer.setAttribute("aria-hidden", "false");
+            }
+
+            function closeCartDrawer() {
+                els.cartDrawer.classList.remove("open");
+                els.cartDrawer.setAttribute("aria-hidden", "true");
+            }
+
+            function buildControlsForCard(card) {
+                const details = card.querySelector(".details");
+                if (!details) return;
+                if (card.querySelector(".add-to-cart-wrap")) return;
+
+                const img = card.querySelector("img");
+                const nameEl = details.querySelector(".name");
+                const productName =
+                    (nameEl && nameEl.textContent.trim()) ||
+                    (details.querySelector(".price-row > span") && details.querySelector(".price-row > span").textContent.trim()) ||
+                    (img && img.getAttribute("alt") ? img.getAttribute("alt").trim() : "Ürün");
+
+                const priceBoxes = details.querySelectorAll(".price-box");
+                let options = [];
+
+                if (priceBoxes && priceBoxes.length > 0) {
+                    options = Array.from(priceBoxes).map(function (box, idx) {
+                        const optLabel = (box.querySelector(".price-label") && box.querySelector(".price-label").textContent.trim()) || ("Seçenek " + (idx + 1));
+                        const unitPrice = parseTL(box.querySelector(".price-tag") && box.querySelector(".price-tag").textContent);
+                        return { optionLabel: optLabel, unitPrice: unitPrice };
+                    });
+                } else {
+                    const unitPrice = parseTL(details.querySelector(".price-tag") && details.querySelector(".price-tag").textContent);
+                    options = [{ optionLabel: "Standart", unitPrice: unitPrice }];
+                }
+
+                const wrap = document.createElement("div");
+                wrap.className = "add-to-cart-wrap";
+
+                options.forEach(function (opt) {
+                    const cartKey = normalizeKey(productName + "|" + opt.optionLabel);
+
+                    const row = document.createElement("div");
+                    row.className = "add-to-cart-opt-row";
+                    row.dataset.cartKey = cartKey;
+                    row.dataset.productName = productName;
+                    row.dataset.optionLabel = opt.optionLabel;
+                    row.dataset.unitPrice = String(opt.unitPrice);
+
+                    const info = document.createElement("div");
+                    info.className = "add-to-cart-opt-info";
+                    const shownName = opt.optionLabel === "Standart" ? productName : opt.optionLabel;
+                    info.innerHTML =
+                        '<div class="add-to-cart-opt-name">' + escapeHtml(shownName) + "</div>" +
+                        '<div class="add-to-cart-opt-price">' + formatTL(opt.unitPrice) + "</div>";
+
+                    const actions = document.createElement("div");
+                    actions.className = "add-to-cart-opt-actions";
+
+                    const addBtn = document.createElement("button");
+                    addBtn.type = "button";
+                    addBtn.className = "add-to-cart-add-btn";
+                    addBtn.textContent = "Sepete Ekle";
+
+                    const qtyControls = document.createElement("div");
+                    qtyControls.className = "add-to-cart-qty-controls hidden";
+                    qtyControls.innerHTML =
+                        '<button type="button" class="qty-btn qty-minus" aria-label="Azalt">−</button>' +
+                        '<span class="qty-count">0</span>' +
+                        '<button type="button" class="qty-btn qty-plus" aria-label="Arttır">+</button>';
+
+                    actions.appendChild(addBtn);
+                    actions.appendChild(qtyControls);
+
+                    row.appendChild(info);
+                    row.appendChild(actions);
+                    wrap.appendChild(row);
+                });
+
+                details.appendChild(wrap);
+            }
+
+            function buildAllControls() {
+                var cards = Array.from(document.querySelectorAll(".menu-item"));
+                cards.forEach(buildControlsForCard);
+            }
+
+            function updateCardControls() {
+                var rows = Array.from(document.querySelectorAll(".add-to-cart-opt-row"));
+                rows.forEach(function (row) {
+                    const key = row.dataset.cartKey;
+                    const item = cart[key];
+                    const qty = item ? (item.quantity || 0) : 0;
+
+                    const addBtn = row.querySelector(".add-to-cart-add-btn");
+                    const qtyControls = row.querySelector(".add-to-cart-qty-controls");
+                    const qtyCount = row.querySelector(".qty-count");
+
+                    if (qty <= 0) {
+                        qtyControls.classList.add("hidden");
+                        addBtn.classList.remove("hidden");
+                    } else {
+                        qtyControls.classList.remove("hidden");
+                        addBtn.classList.add("hidden");
+                        qtyCount.textContent = String(qty);
+                    }
+                });
+            }
+
+            function updateWhatsAppHref() {
+                const count = cartCount();
+                if (count <= 0) return;
+
+                const total = cartTotal();
+                let lines = [];
+                lines.push("Çiğköfteci Ömer Usta - Sipariş");
+                lines.push("");
+
+                Object.values(cart).forEach(function (item) {
+                    const title = item.optionLabel && item.optionLabel !== "Standart"
+                        ? (item.productName + " - " + item.optionLabel)
+                        : item.productName;
+                    const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
+                    lines.push("• " + title + " x " + item.quantity + " = " + formatTL(lineTotal));
+                });
+
+                lines.push("");
+                lines.push("Toplam: " + formatTL(total));
+
+                const message = lines.join("\n");
+                els.cartWhatsAppLink.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
+            }
+
+            function renderCartDrawer() {
+                const items = Object.entries(cart).map(function (pair) {
+                    return { key: pair[0], productName: pair[1].productName, optionLabel: pair[1].optionLabel, unitPrice: pair[1].unitPrice, quantity: pair[1].quantity };
+                });
+
+                const count = cartCount();
+                const total = cartTotal();
+                els.cartDrawerMeta.textContent = count > 0 ? (count + " ürün seçildi") : "Ürün ekleyin";
+
+                if (items.length === 0) {
+                    els.cartItems.innerHTML = '<div class="cart-empty">Sepetiniz boş.</div>';
+                    els.cartTotal.textContent = "";
+                    els.cartWhatsAppLink.classList.add("hidden");
+                    return;
+                }
+
+                items.sort(function (a, b) {
+                    return a.productName.localeCompare(b.productName, "tr");
+                });
+
+                els.cartItems.innerHTML = items.map(function (item) {
+                    const title = item.optionLabel && item.optionLabel !== "Standart"
+                        ? (item.productName + " - " + item.optionLabel)
+                        : item.productName;
+                    const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
+
+                    return '' +
+                        '<div class="cart-item-row" data-cart-key="' + escapeHtml(item.key) + '">' +
+                        '  <div class="cart-item-main">' +
+                        '    <div class="cart-item-title">' + escapeHtml(title) + '</div>' +
+                        '    <div class="cart-item-sub">Birim: ' + formatTL(item.unitPrice) + ' | Satır: ' + formatTL(lineTotal) + '</div>' +
+                        '  </div>' +
+                        '  <div class="cart-item-right">' +
+                        '    <div class="cart-qty-controls">' +
+                        '      <button type="button" class="qty-btn qty-minus" aria-label="Azalt">−</button>' +
+                        '      <span class="qty-count">' + String(item.quantity) + '</span>' +
+                        '      <button type="button" class="qty-btn qty-plus" aria-label="Arttır">+</button>' +
+                        '    </div>' +
+                        '  </div>' +
+                        '</div>';
+                }).join("");
+
+                els.cartTotal.innerHTML = 'Toplam: <span class="cart-total-amount">' + formatTL(total) + '</span> <span class="cart-total-meta">(' + count + ' ürün)</span>';
+                els.cartWhatsAppLink.classList.remove("hidden");
+                updateWhatsAppHref();
+            }
+
+            function updateAll() {
+                updateSticky();
+                updateCardControls();
+                renderCartDrawer();
+            }
+
+            // Ürün kartı: Sepete Ekle / + / -
+            document.addEventListener("click", function (e) {
+                const addBtn = e.target.closest(".add-to-cart-add-btn");
+                if (addBtn) {
+                    const row = addBtn.closest(".add-to-cart-opt-row");
+                    if (!row) return;
+                    const key = row.dataset.cartKey;
+                    addOrUpdateCart(key, +1, {
+                        productName: row.dataset.productName,
+                        optionLabel: row.dataset.optionLabel,
+                        unitPrice: Number(row.dataset.unitPrice) || 0
+                    });
+                    updateAll();
+                    return;
+                }
+
+                const minusBtn = e.target.closest(".qty-minus");
+                if (minusBtn) {
+                    const row = minusBtn.closest("[data-cart-key]");
+                    if (!row) return;
+                    addOrUpdateCart(row.dataset.cartKey, -1);
+                    updateAll();
+                    return;
+                }
+
+                const plusBtn = e.target.closest(".qty-plus");
+                if (plusBtn) {
+                    const row = plusBtn.closest("[data-cart-key]");
+                    if (!row) return;
+                    addOrUpdateCart(row.dataset.cartKey, +1);
+                    updateAll();
+                    return;
+                }
+            });
+
+            // Sticky / Drawer butonları
+            els.stickyCartBtn.addEventListener("click", function () {
+                if (cartCount() <= 0) return;
+                renderCartDrawer();
+                openCartDrawer();
+            });
+
+            els.cartCloseBtn.addEventListener("click", function () {
+                closeCartDrawer();
+            });
+
+            els.cartClearBtn.addEventListener("click", function () {
+                cart = {};
+                saveCart(cart);
+                updateAll();
+                closeCartDrawer();
+            });
+
+            // Init
+            buildAllControls();
+            updateAll();
+        })();
+    </script>
 </body>
 </html>
