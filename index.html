@@ -6,12 +6,13 @@
     <title>Çiğköfteci Ömer Usta Menü</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        html { scroll-behavior: smooth; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f8f8; color: #333; padding-bottom: calc(var(--cart-action-bar-height, 68px) + 52px); }
         .header { background-color: #bc1818; color: white; text-align: center; padding: 25px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
         .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
         .header p { margin: 5px 0 0; font-weight: 300; opacity: 0.9; font-size: 13px; }
         .container { padding: 15px; max-width: 500px; margin: auto; }
-        .section-title { color: #bc1818; border-bottom: 2px solid #bc1818; padding-bottom: 5px; margin: 30px 0 15px; font-size: 20px; font-weight: bold; display: flex; align-items: center; }
+        .section-title { color: #bc1818; border-bottom: 2px solid #bc1818; padding-bottom: 5px; margin: 30px 0 15px; font-size: 20px; font-weight: bold; display: flex; align-items: center; scroll-margin-top: 110px; }
         .section-title i { margin-right: 10px; }
         .menu-item { background: white; margin-bottom: 25px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #eee; display: flex; flex-direction: column; }
         .menu-item img { width: 100%; height: auto; display: block; object-fit: cover; background-color: #eee; min-height: 180px; }
@@ -236,6 +237,41 @@
         }
 
         .footer { text-align: center; padding: 40px 20px 100px; color: #999; font-size: 11px; }
+
+        .quick-nav {
+          position: fixed;
+          left: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 1003;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          max-width: 132px;
+        }
+        .quick-nav a,
+        .quick-nav button {
+          border: 1px solid rgba(188,24,24,0.24);
+          background: rgba(255,255,255,0.96);
+          color: #bc1818;
+          border-radius: 12px;
+          padding: 8px 10px;
+          font-size: 12px;
+          font-weight: 800;
+          text-decoration: none;
+          cursor: pointer;
+          text-align: left;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+        }
+        .quick-nav a:active,
+        .quick-nav button:active { transform: translateY(1px); }
+
+        @media (max-width: 900px) {
+          .quick-nav { left: 6px; max-width: 124px; }
+          .quick-nav a, .quick-nav button { font-size: 11px; padding: 7px 8px; }
+        }
     </style>
 </head>
 <body>
@@ -245,8 +281,17 @@
         <p>YENİGÜN ŞUBESİ - DÜNYAYI SARAN LEZZET</p>
     </div>
 
+    <nav class="quick-nav" aria-label="Hızlı kategori geçişi">
+        <a href="#porsiyon-menuler">Porsiyon Menüler</a>
+        <a href="#durum-cesitleri">Dürüm Çeşitleri</a>
+        <a href="#susi">Suşi</a>
+        <a href="#midye-dolma">Midye Dolma</a>
+        <a href="#icecekler">İçecekler</a>
+        <button id="scrollTopBtn" type="button">Yukarı Çık</button>
+    </nav>
+
     <div class="container">
-        <div class="section-title"><i class="fas fa-utensils"></i> Porsiyon Menüler</div>
+        <div id="porsiyon-menuler" class="section-title"><i class="fas fa-utensils"></i> Porsiyon Menüler</div>
         <div class="menu-item"><img src="1kgporsiyon.jpg" alt="1 KG"><div class="details"><span class="name">1 KG Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">600₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">450₺</span></div></div></div></div>
         <div class="menu-item"><img src="750grporsiyon.jpg" alt="750 GR"><div class="details"><span class="name">750 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">500₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">350₺</span></div></div></div></div>
         <div class="menu-item"><img src="650grporsiyon.jpg" alt="650 GR"><div class="details"><span class="name">650 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">450₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">325₺</span></div></div></div></div>
@@ -254,7 +299,7 @@
         <div class="menu-item"><img src="400grporsiyon.jpg" alt="400 GR"><div class="details"><span class="name">400 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">300₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">250₺</span></div></div></div></div>
         <div class="menu-item"><img src="200grporsiyon.jpg" alt="200 GR"><div class="details"><span class="name">200 GR Porsiyon</span><div class="price-row"><div class="price-box"><span class="price-label">Garnitürlü</span><span class="price-tag">200₺</span></div><div class="price-box"><span class="price-label">Garnitürsüz</span><span class="price-tag" style="background:#666;">175₺</span></div></div></div></div>
 
-        <div class="section-title"><i class="fas fa-bread-slice"></i> Dürüm Çeşitleri</div>
+        <div id="durum-cesitleri" class="section-title"><i class="fas fa-bread-slice"></i> Dürüm Çeşitleri</div>
         <div class="menu-item"><img src="Durum100gr.jpg" alt="Dürüm"><div class="details"><div class="price-row"><span class="name">Dürüm (100gr)</span><span class="price-tag">120₺</span></div></div></div>
         <div class="menu-item"><img src="Doritoslu.jpg" alt="Doritoslu"><div class="details"><div class="price-row"><span class="name">Doritoslu Dürüm</span><span class="price-tag">140₺</span></div></div></div>
         <div class="menu-item"><img src="Megadurum.jpg" alt="Mega"><div class="details"><div class="price-row"><span class="name">Mega Dürüm (120gr)</span><span class="price-tag">140₺</span></div></div></div>
@@ -262,49 +307,113 @@
         <div class="menu-item"><img src="Ultra.jpg" alt="Ultra Mega"><div class="details"><div class="price-row"><span class="name">Ultra Mega Dürüm (140gr)</span><span class="price-tag">160₺</span></div></div></div>
         <div class="menu-item"><img src="Doritosluultra.jpg" alt="Doritoslu Ultra"><div class="details"><div class="price-row"><span class="name">Doritoslu Ultra Mega</span><span class="price-tag">180₺</span></div></div></div>
 
-        <div class="section-title"><i class="fas fa-circle-notch"></i> Suşi</div>
+        <div id="susi" class="section-title"><i class="fas fa-circle-notch"></i> Suşi</div>
         <div class="menu-item"><img src="susi.jpg" alt="Suşi"><div class="details"><div class="price-row"><span class="name">Suşi Çiğköfte (170gr)</span><span class="price-tag">200₺</span></div></div></div>
         <div class="menu-item"><img src="Doritoslususi.jpg" alt="Doritoslu Suşi"><div class="details"><div class="price-row"><span class="name">Doritoslu Suşi</span><span class="price-tag">200₺</span></div></div></div>
 
-        <div class="section-title"><i class="fas fa-fish"></i> Midye Dolma</div>
+        <div id="midye-dolma" class="section-title"><i class="fas fa-fish"></i> Midye Dolma</div>
         <div class="menu-item"><img src="Midye.jpg" alt="Midye"><div class="details"><span class="name">Midye Dolma</span><div class="price-row"><div class="price-box"><span class="price-label">1 Adet</span><span class="price-tag">20₺</span></div><div class="price-box"><span class="price-label">10 Adet</span><span class="price-tag">175₺</span></div></div><div class="price-row"><div class="price-box"><span class="price-label">20 Adet</span><span class="price-tag">300₺</span></div><div class="price-box"><span class="price-label">50 Adet</span><span class="price-tag">700₺</span></div></div></div></div>
 
-        <div class="section-title"><i class="fas fa-glass-water"></i> İçecekler</div>
+        <div id="icecekler" class="section-title"><i class="fas fa-glass-water"></i> İçecekler</div>
 
-        <div class="menu-item">
-            <img src="kucukayran.jpg?v=1" alt="Küçük Ayran">
-            <div class="details">
-                <div class="price-row"><span>Küçük Ayran</span><span class="price-tag">35₺</span></div>
-            </div>
-        </div>
+<div class="menu-item">
+    <img src="kucukayran.jpg?v=1" alt="Küçük Ayran">
+    <div class="details">
+        <div class="price-row"><span>Küçük Ayran</span><span class="price-tag">35₺</span></div>
+    </div>
+</div>
 
-        <div class="menu-item">
-            <img src="buyukayran.jpg?v=1" alt="Büyük Ayran">
-            <div class="details">
-                <div class="price-row"><span>Büyük Ayran</span><span class="price-tag">50₺</span></div>
-            </div>
-        </div>
+<div class="menu-item">
+    <img src="buyukayran.jpg?v=1" alt="Büyük Ayran">
+    <div class="details">
+        <div class="price-row"><span>Büyük Ayran</span><span class="price-tag">50₺</span></div>
+    </div>
+</div>
 
-        <div class="menu-item">
-            <img src="litrelikayran.jpg?v=1" alt="Litrelik Ayran">
-            <div class="details">
-                <div class="price-row"><span>Litrelik Ayran (1L)</span><span class="price-tag">100₺</span></div>
-            </div>
-        </div>
+<div class="menu-item">
+    <img src="litrelikayran.jpg?v=1" alt="Litrelik Ayran">
+    <div class="details">
+        <div class="price-row"><span>Litrelik Ayran (1L)</span><span class="price-tag">100₺</span></div>
+    </div>
+</div>
 
-        <div class="menu-item">
-            <img src="salgam.jpg?v=1" alt="Şalgam">
-            <div class="details">
-                <div class="price-row"><span class="name">Acılı / Acısız Şalgam</span><span class="price-tag">35₺</span></div>
-            </div>
-        </div>
+<div class="menu-item">
+    <img src="salgam.jpg?v=1" alt="Şalgam">
+    <div class="details">
+        <div class="price-row"><span class="name">Şalgam Suyu (300 ml)</span><span class="price-tag">35₺</span></div>
+    </div>
+</div>
 
-        <div class="menu-item">
-            <img src="litreliksalgam.jpg?v=2" alt="L Şalgam">
-            <div class="details">
-                <div class="price-row"><span class="name">Litrelik Şalgam</span><span class="price-tag">100₺</span></div>
-            </div>
-        </div>
+<div class="menu-item">
+    <img src="litreliksalgam.jpg?v=2" alt="L Şalgam">
+    <div class="details">
+        <div class="price-row"><span class="name">Litrelik Şalgam</span><span class="price-tag">100₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="enerji.jpg" alt="Black Bruin Kutu Enerji İçeceği 250 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Black Bruin Kutu Enerji İçeceği (250 ml)</span><span class="price-tag">70₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="kutukola.jpg" alt="Sarıyer Kutu Kola 330 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Kutu Kola (330 ml)</span><span class="price-tag">50₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="gazoz.jpg" alt="Sarıyer Kutu Karışık Meyve Aromalı Gazoz 330 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Kutu Karışık Meyve Aromalı Gazoz (330 ml)</span><span class="price-tag">50₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="portakal.jpg" alt="Sarıyer Kutu Portakal 330 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Kutu Portakal (330 ml)</span><span class="price-tag">50₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="1ltkola.jpg" alt="Sarıyer 1LT Kola">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer 1LT Kola</span><span class="price-tag">65₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="1ltportakal.jpg" alt="Sarıyer 1LT Portakal">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer 1LT Portakal</span><span class="price-tag">65₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="camgazoz.jpg" alt="Sarıyer Cam Karışık Meyve Aromalı Gazoz 200 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Cam Karışık Meyve Aromalı Gazoz (200 ml)</span><span class="price-tag">45₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="camkola.jpg" alt="Sarıyer Cam Kola 200 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Cam Kola (200 ml)</span><span class="price-tag">40₺</span></div>
+    </div>
+</div>
+
+<div class="menu-item">
+    <img src="limonata.jpg" alt="Sarıyer Limonata 250 ml">
+    <div class="details">
+        <div class="price-row"><span class="name">Sarıyer Limonata (250 ml)</span><span class="price-tag">35₺</span></div>
+    </div>
+</div>
+
     </div>
 
     <div id="cartDrawer" class="cart-drawer" aria-hidden="true">
@@ -481,6 +590,7 @@
                     els.stickyCartMeta.textContent = "";
                 }
 
+                // Buton çubuğu yüksekliği değişebileceği için dinamik güncelle
                 syncCartBarHeight();
             }
 
@@ -520,6 +630,15 @@
                     options = [{ optionLabel: "Standart", unitPrice: unitPrice }];
                 }
 
+                // Özel seçenek: Şalgam için acılı/acısız ayrımı sipariş notunda görünsün.
+                if (productName === "Şalgam Suyu (300 ml)") {
+                    const unitPrice = parseTL(details.querySelector(".price-tag") && details.querySelector(".price-tag").textContent);
+                    options = [
+                        { optionLabel: "Acılı", unitPrice: unitPrice },
+                        { optionLabel: "Acısız", unitPrice: unitPrice }
+                    ];
+                }
+
                 const wrap = document.createElement("div");
                 wrap.className = "add-to-cart-wrap";
 
@@ -553,7 +672,7 @@
                     qtyControls.innerHTML =
                         '<button type="button" class="qty-btn qty-minus" aria-label="Azalt">−</button>' +
                         '<span class="qty-count">0</span>' +
-                        '<button type="button" class="qty-btn qty-plus" aria-label="Arttır">+</button>';
+                        '<button type="button" class="qty-btn qty-plus" aria-label="Artır">+</button>';
 
                     actions.appendChild(addBtn);
                     actions.appendChild(qtyControls);
@@ -698,7 +817,7 @@
                         '    <div class="cart-qty-controls">' +
                         '      <button type="button" class="qty-btn qty-minus" aria-label="Azalt">−</button>' +
                         '      <span class="qty-count">' + String(item.quantity) + '</span>' +
-                        '      <button type="button" class="qty-btn qty-plus" aria-label="Arttır">+</button>' +
+                        '      <button type="button" class="qty-btn qty-plus" aria-label="Artır">+</button>' +
                         '    </div>' +
                         '  </div>' +
                         '</div>';
@@ -777,6 +896,13 @@
                 updateAll();
                 closeCartDrawer();
             });
+
+            const scrollTopBtn = document.getElementById("scrollTopBtn");
+            if (scrollTopBtn) {
+                scrollTopBtn.addEventListener("click", function () {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+            }
 
             // Init
             buildAllControls();
