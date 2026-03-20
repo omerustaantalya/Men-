@@ -96,6 +96,7 @@
         .cart-actions { padding: 12px 16px 0; display: flex; gap: 10px; }
         .btn-clear { background: #666; }
         .menu-note { margin-top: 10px; font-size: 12px; color: #777; line-height: 1.35; font-weight: 600; }
+        .btn-disabled { opacity: .55; pointer-events: none; filter: grayscale(0.12); }
 
         /* Ödeme şekli */
         .payment-section { padding: 10px 16px 0; }
@@ -139,6 +140,24 @@
             background: rgba(188,24,24,0.10);
             color: #bc1818;
         }
+
+        /* Konum seçimi */
+        .location-section { padding: 10px 16px 0; border-top: 1px dashed rgba(0,0,0,.07); }
+        .location-title { font-size: 12px; color: #777; font-weight: 900; text-transform: uppercase; letter-spacing: .2px; margin-bottom: 8px; }
+        .location-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .location-btn {
+            border: 1px solid #eee;
+            background: #fff;
+            border-radius: 12px;
+            padding: 9px 12px;
+            cursor: pointer;
+            font-weight: 900;
+            color: #333;
+        }
+        .location-btn.primary { border-color: #bc1818; color: #bc1818; background: rgba(188,24,24,0.06); }
+        .location-status { font-size: 12px; color: #666; font-weight: 700; }
+        .location-status.ok { color: #1b8d39; }
+        .location-status.err { color: #bc1818; }
 
         /* Canva/AI tasarım dokunuşları (yalnızca görünüm) */
         :root{
@@ -484,6 +503,19 @@
             </div>
         </div>
 
+        <div id="locationSection" class="location-section" aria-label="Teslimat konumu">
+            <div class="location-title">Teslimat Konumu (Zorunlu)</div>
+            <div class="location-row">
+                <button id="getLocationBtn" type="button" class="location-btn primary">
+                    <i class="fas fa-location-crosshairs" style="margin-right:6px;"></i> Konumumu Al
+                </button>
+                <button id="clearLocationBtn" type="button" class="location-btn">
+                    <i class="fas fa-xmark" style="margin-right:6px;"></i> Konumu Temizle
+                </button>
+                <span id="locationStatus" class="location-status">Konum seçilmedi.</span>
+            </div>
+        </div>
+
         <div class="cart-bottom">
             <div class="cart-actions">
                 <a id="cartWhatsAppLink" class="btn btn-whatsapp hidden" href="#" target="_blank" rel="noopener">
@@ -506,6 +538,7 @@
         (function () {
             const CART_KEY = "omerusta_cart_v1";
             const WHATSAPP_NUMBER = "905412512189";
+            const LOCATION_KEY = "omerusta_delivery_location_v1";
 
             const els = {
                 stickyCartBtn: document.getElementById("stickyCartBtn"),
@@ -518,12 +551,16 @@
                 cartClearBtn: document.getElementById("cartClearBtn"),
                 cartCloseBtn: document.getElementById("cartCloseBtn"),
                 paymentCashBtn: document.getElementById("paymentCashBtn"),
-                paymentCardBtn: document.getElementById("paymentCardBtn")
+                paymentCardBtn: document.getElementById("paymentCardBtn"),
+                getLocationBtn: document.getElementById("getLocationBtn"),
+                clearLocationBtn: document.getElementById("clearLocationBtn"),
+                locationStatus: document.getElementById("locationStatus")
             };
 
             let cart = loadCart();
             const PAYMENT_KEY = "omerusta_payment_v1";
             let paymentMethod = loadPaymentMethod();
+            let deliveryLocation = loadDeliveryLocation();
 
             function loadPaymentMethod() {
                 try {
@@ -545,6 +582,77 @@
                 savePaymentMethod(paymentMethod);
                 updatePaymentUI();
                 updateWhatsAppHref();
+            }
+
+            function loadDeliveryLocation() {
+                try {
+                    const raw = localStorage.getItem(LOCATION_KEY);
+                    if (!raw) return null;
+                    const parsed = JSON.parse(raw);
+                    if (!parsed || typeof parsed !== "object") return null;
+                    const lat = Number(parsed.lat);
+                    const lng = Number(parsed.lng);
+                    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+                    return { lat: lat, lng: lng, at: parsed.at || Date.now() };
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function saveDeliveryLocation(loc) {
+                try {
+                    if (!loc) {
+                        localStorage.removeItem(LOCATION_KEY);
+                        return;
+                    }
+                    localStorage.setItem(LOCATION_KEY, JSON.stringify(loc));
+                } catch (e) { }
+            }
+
+            function hasLocation() {
+                return !!(deliveryLocation && Number.isFinite(deliveryLocation.lat) && Number.isFinite(deliveryLocation.lng));
+            }
+
+            function updateLocationUI(message, stateClass) {
+                if (!els.locationStatus) return;
+                els.locationStatus.textContent = message || (hasLocation() ? "Konum alindi." : "Konum secilmedi.");
+                els.locationStatus.classList.remove("ok", "err");
+                if (stateClass) els.locationStatus.classList.add(stateClass);
+            }
+
+            function formatCoord(v) {
+                return Number(v).toFixed(6);
+            }
+
+            function setDeliveryLocation(lat, lng) {
+                deliveryLocation = { lat: Number(lat), lng: Number(lng), at: Date.now() };
+                saveDeliveryLocation(deliveryLocation);
+                updateLocationUI("Konum alindi: " + formatCoord(lat) + ", " + formatCoord(lng), "ok");
+                updateWhatsAppHref();
+            }
+
+            function clearDeliveryLocation() {
+                deliveryLocation = null;
+                saveDeliveryLocation(null);
+                updateLocationUI("Konum secilmedi.");
+                updateWhatsAppHref();
+            }
+
+            function requestDeliveryLocation() {
+                if (!navigator.geolocation) {
+                    updateLocationUI("Bu cihaz konum destegi sunmuyor.", "err");
+                    return;
+                }
+                updateLocationUI("Konum aliniyor...");
+                navigator.geolocation.getCurrentPosition(
+                    function (pos) {
+                        setDeliveryLocation(pos.coords.latitude, pos.coords.longitude);
+                    },
+                    function () {
+                        updateLocationUI("Konum izni gerekli. Lutfen izin verin.", "err");
+                    },
+                    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+                );
             }
 
             function updatePaymentUI() {
@@ -813,6 +921,14 @@
                 lines.push("Toplam ürün: " + count);
                 lines.push("Toplam tutar: " + formatTL(total));
                 lines.push("Ödeme şekli: " + paymentMethod);
+                if (hasLocation()) {
+                    const lat = deliveryLocation.lat;
+                    const lng = deliveryLocation.lng;
+                    lines.push("Teslimat konumu: " + formatCoord(lat) + ", " + formatCoord(lng));
+                    lines.push("Harita linki: https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng);
+                } else {
+                    lines.push("Teslimat konumu: SECILMEDI");
+                }
                 lines.push("");
                 lines.push("Sipariş Detayı:");
 
@@ -857,6 +973,9 @@
 
                 const message = lines.join("\n");
                 els.cartWhatsAppLink.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
+                const canSend = hasLocation();
+                els.cartWhatsAppLink.classList.toggle("btn-disabled", !canSend);
+                els.cartWhatsAppLink.title = canSend ? "Siparisi WhatsApp'tan onayla" : "Onay icin once konum secin";
             }
 
             function renderCartDrawer() {
@@ -976,6 +1095,22 @@
                 closeCartDrawer();
             });
 
+            if (els.getLocationBtn) {
+                els.getLocationBtn.addEventListener("click", requestDeliveryLocation);
+            }
+            if (els.clearLocationBtn) {
+                els.clearLocationBtn.addEventListener("click", clearDeliveryLocation);
+            }
+            if (els.cartWhatsAppLink) {
+                els.cartWhatsAppLink.addEventListener("click", function (e) {
+                    if (cartCount() <= 0) return;
+                    if (!hasLocation()) {
+                        e.preventDefault();
+                        updateLocationUI("Siparis onayi icin once konum secin.", "err");
+                    }
+                });
+            }
+
             const scrollTopBtn = document.getElementById("scrollTopBtn");
             if (scrollTopBtn) {
                 scrollTopBtn.addEventListener("click", function () {
@@ -995,6 +1130,11 @@
             // Init
             buildAllControls();
             updatePaymentUI();
+            if (hasLocation()) {
+                updateLocationUI("Konum alindi: " + formatCoord(deliveryLocation.lat) + ", " + formatCoord(deliveryLocation.lng), "ok");
+            } else {
+                updateLocationUI("Konum secilmedi.");
+            }
             updateAll();
         })();
     </script>
