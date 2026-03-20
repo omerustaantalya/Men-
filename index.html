@@ -21,7 +21,6 @@
             margin: 0 auto;
             border-radius: 12px;
             box-shadow: 0 6px 24px rgba(0,0,0,0.22);
-            vertical-align: middle;
         }
         .header .header-tagline {
             margin: 14px 0 0;
@@ -138,6 +137,39 @@
         .cart-actions { padding: 12px 16px 0; display: flex; gap: 10px; }
         .btn-clear { background: #666; }
         .menu-note { margin-top: 10px; font-size: 12px; color: #777; line-height: 1.35; font-weight: 600; }
+
+        /* Sipariş notu */
+        .order-note-section { padding: 10px 16px 0; }
+        .order-note-title {
+            font-size: 12px;
+            color: #777;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .order-note-input {
+            width: 100%;
+            min-height: 84px;
+            resize: vertical;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.35;
+            outline: none;
+            box-sizing: border-box;
+            background: rgba(255,255,255,0.96);
+        }
+        .order-note-input:focus {
+            border-color: rgba(188,24,24,0.40);
+            box-shadow: 0 0 0 4px rgba(188,24,24,0.08);
+        }
+        .order-note-hint { margin-top: 6px; color: #777; font-size: 12px; font-weight: 700; line-height: 1.35; }
 
         /* Ödeme şekli */
         .payment-section { padding: 10px 16px 0; }
@@ -479,6 +511,7 @@
           .cart-list { min-height: 100px; padding: 8px 12px; }
           .cart-total { padding: 8px 12px 0; }
           .payment-section, .location-section, .upsell-section { padding: 8px 12px 0; }
+          .order-note-section { padding: 8px 12px 0; }
           .cart-actions { padding: 10px 12px 0; }
           .cart-bottom { padding-bottom: 12px; }
         }
@@ -641,6 +674,12 @@
             <div id="cartItems" class="cart-list"></div>
             <div id="cartTotal" class="cart-total"></div>
 
+                <div id="orderNoteSection" class="order-note-section" aria-label="Sipariş notu">
+                    <div class="order-note-title">İşletmeye Not</div>
+                    <textarea id="orderNoteInput" class="order-note-input" maxlength="400" placeholder="Örn: Gelince arayın!"></textarea>
+                    <div class="order-note-hint">Not, ürünlerin altında siparişe eklenir. En fazla 400 karakter.</div>
+                </div>
+
             <div id="paymentSection" class="payment-section" aria-label="Ödeme şekli">
                 <div class="payment-title">
                     <span>Ödeme Şekli</span>
@@ -695,6 +734,7 @@
             const CART_KEY = "omerusta_cart_v1";
             const WHATSAPP_NUMBER = "905412512189";
             const LOCATION_KEY = "omerusta_delivery_location_v1";
+            const ORDER_NOTE_KEY = "omerusta_order_note_v1";
 
             const els = {
                 stickyCartBtn: document.getElementById("stickyCartBtn"),
@@ -712,7 +752,8 @@
                 clearLocationBtn: document.getElementById("clearLocationBtn"),
                 locationStatus: document.getElementById("locationStatus"),
                 drinkUpsell: document.getElementById("drinkUpsell"),
-                toastMsg: document.getElementById("toastMsg")
+                toastMsg: document.getElementById("toastMsg"),
+                orderNoteInput: document.getElementById("orderNoteInput")
             };
 
             function syncStickyLayoutOffsets() {
@@ -878,6 +919,16 @@
             function formatTL(value) {
                 const n = Math.round(Number(value) || 0);
                 return n + "₺";
+            }
+
+            function parseMidyeAdetPerPack(optionLabel) {
+                if (!optionLabel || optionLabel === "Standart") return null;
+                const m = String(optionLabel).trim().match(/^(\d+)\s*[Aa]det$/);
+                return m ? parseInt(m[1], 10) : null;
+            }
+
+            function isMidyeLineItem(item) {
+                return !!(item && item.productName === "Midye Dolma" && parseMidyeAdetPerPack(item.optionLabel) != null);
             }
 
             function normalizeKey(str) {
@@ -1195,12 +1246,24 @@
                 } catch (e) { }
             }
 
+            function loadOrderNote() {
+                try { return localStorage.getItem(ORDER_NOTE_KEY) || ""; } catch (e) { return ""; }
+            }
+            function saveOrderNote(note) {
+                try { localStorage.setItem(ORDER_NOTE_KEY, String(note || "")); } catch (e) { }
+            }
+            function clearOrderNote() {
+                try { localStorage.removeItem(ORDER_NOTE_KEY); } catch (e) { }
+                if (els.orderNoteInput) els.orderNoteInput.value = "";
+            }
+
             function updateWhatsAppHref() {
                 const count = cartCount();
                 if (count <= 0) return;
 
                 const total = cartTotal();
                 const lines = [];
+                const orderNote = (els.orderNoteInput ? els.orderNoteInput.value : loadOrderNote()).trim();
 
                 lines.push("Çiğköfteci Ömer Usta - Sipariş");
                 lines.push("Yenigün Şubesi");
@@ -1249,14 +1312,32 @@
                     .forEach(function (section) {
                         lines.push("");
                         lines.push("[" + section + "]");
+                        let midyeTotalAdet = 0;
                         groups[section].forEach(function (item) {
-                            const title = item.optionLabel && item.optionLabel !== "Standart"
-                                ? (item.productName + " - " + item.optionLabel)
-                                : item.productName;
                             const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
-                            lines.push("• " + title + " | Adet: " + item.quantity + " | Tutar: " + formatTL(lineTotal));
+                            if (isMidyeLineItem(item)) {
+                                const pack = parseMidyeAdetPerPack(item.optionLabel);
+                                const q = item.quantity || 0;
+                                const totalAdet = pack * q;
+                                midyeTotalAdet += totalAdet;
+                                lines.push("• Midye Dolma | " + pack + "×" + q + " = " + totalAdet + " adet | Tutar: " + formatTL(lineTotal));
+                            } else {
+                                const title = item.optionLabel && item.optionLabel !== "Standart"
+                                    ? (item.productName + " - " + item.optionLabel)
+                                    : item.productName;
+                                lines.push("• " + title + " | Adet: " + item.quantity + " | Tutar: " + formatTL(lineTotal));
+                            }
                         });
+                        if (section === "Midye Dolma" && midyeTotalAdet > 0) {
+                            lines.push("• Toplam Midye: " + midyeTotalAdet + " adet");
+                        }
                 });
+
+                if (orderNote) {
+                    lines.push("");
+                    lines.push("Lütfen Nota Dikkat Edin! :");
+                    lines.push(orderNote);
+                }
 
                 const message = lines.join("\n");
                 els.cartWhatsAppLink.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
@@ -1283,17 +1364,35 @@
                     return a.productName.localeCompare(b.productName, "tr");
                 });
 
+                const midyeItems = items.filter(isMidyeLineItem);
+                const midyeTotalAdet = midyeItems.reduce(function (sum, item) {
+                    const pack = parseMidyeAdetPerPack(item.optionLabel);
+                    const q = item.quantity || 0;
+                    return sum + ((pack || 0) * q);
+                }, 0);
+
                 els.cartItems.innerHTML = items.map(function (item) {
-                    const title = item.optionLabel && item.optionLabel !== "Standart"
-                        ? (item.productName + " - " + item.optionLabel)
-                        : item.productName;
                     const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
+                    let title;
+                    let subLine;
+                    if (isMidyeLineItem(item)) {
+                        const pack = parseMidyeAdetPerPack(item.optionLabel);
+                        const q = item.quantity || 0;
+                        const totalAdet = pack * q;
+                        title = "Midye Dolma";
+                        subLine = pack + "×" + q + " = " + totalAdet + " adet | Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
+                    } else {
+                        title = item.optionLabel && item.optionLabel !== "Standart"
+                            ? (item.productName + " - " + item.optionLabel)
+                            : item.productName;
+                        subLine = "Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
+                    }
 
                     return '' +
                         '<div class="cart-item-row" data-cart-key="' + escapeHtml(item.key) + '">' +
                         '  <div class="cart-item-main">' +
                         '    <div class="cart-item-title">' + escapeHtml(title) + '</div>' +
-                        '    <div class="cart-item-sub">Birim: ' + formatTL(item.unitPrice) + ' | Satır: ' + formatTL(lineTotal) + '</div>' +
+                        '    <div class="cart-item-sub">' + escapeHtml(subLine) + '</div>' +
                         '  </div>' +
                         '  <div class="cart-item-right">' +
                         '    <div class="cart-qty-controls">' +
@@ -1303,7 +1402,7 @@
                         '    </div>' +
                         '  </div>' +
                         '</div>';
-                }).join("");
+                }).join("") + (midyeTotalAdet > 0 ? '<div class="cart-item-sub" style="padding: 10px 0 0; color:#bc1818; font-weight:1000;">Toplam Midye: ' + midyeTotalAdet + ' adet</div>' : "");
 
                 els.cartTotal.innerHTML = 'Toplam: <span class="cart-total-amount">' + formatTL(total) + '</span> <span class="cart-total-meta">(' + count + ' ürün)</span>';
                 els.cartWhatsAppLink.classList.remove("hidden");
@@ -1378,6 +1477,14 @@
                 openCartDrawer();
             });
 
+            if (els.orderNoteInput) {
+                els.orderNoteInput.value = loadOrderNote();
+                els.orderNoteInput.addEventListener("input", function () {
+                    saveOrderNote(els.orderNoteInput.value);
+                    updateWhatsAppHref();
+                });
+            }
+
             // Ödeme seçimleri
             if (els.paymentCashBtn && els.paymentCardBtn) {
                 els.paymentCashBtn.addEventListener("click", function () {
@@ -1395,6 +1502,7 @@
             els.cartClearBtn.addEventListener("click", function () {
                 cart = {};
                 saveCart(cart);
+                clearOrderNote();
                 updateAll();
                 closeCartDrawer();
             });
