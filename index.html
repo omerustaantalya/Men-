@@ -130,6 +130,26 @@
         .cart-item-title { font-weight: 1000; color: #bc1818; line-height: 1.2; }
         .cart-item-sub { color: #777; font-size: 12px; margin-top: 4px; }
         .cart-qty-controls { display: flex; align-items: center; gap: 10px; }
+        .contents-remove-wrap { margin-top: 6px; }
+        .contents-remove-title {
+            font-weight: 900;
+            color: #777;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+            margin-bottom: 4px;
+        }
+        .contents-remove-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .contents-remove-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.6);
+        }
+        .contents-remove-item input { accent-color: #bc1818; }
         .cart-total { padding: 10px 16px 0; font-weight: 1000; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
         .cart-total-amount { color: #bc1818; }
         .cart-total-meta { color: #777; font-size: 12px; font-weight: 800; }
@@ -675,14 +695,19 @@
             <div id="cartTotal" class="cart-total"></div>
 
                 <div id="orderNoteSection" class="order-note-section" aria-label="Sipariş notu">
-                    <div class="order-note-title">İşletmeye Not</div>
+                    <div class="order-note-title">
+                        <span>İşletmeye Not:</span>
+                        <span class="payment-warning">Lütfen herhangi bir gıdaya karşı alerjiniz varsa sipariş notu kısmında belirtiniz!</span>
+                    </div>
                     <textarea id="orderNoteInput" class="order-note-input" maxlength="400" placeholder="Örn: Gelince arayın!"></textarea>
-                    <div class="order-note-hint">Not, ürünlerin altında siparişe eklenir. En fazla 400 karakter.</div>
+                    <div class="order-note-hint">
+                        Not, ürünlerin altında siparişe eklenir. En fazla 400 karakter.
+                    </div>
                 </div>
 
             <div id="paymentSection" class="payment-section" aria-label="Ödeme şekli">
                 <div class="payment-title">
-                    <span>Ödeme Şekli</span>
+                    <span>ÖDEME ŞEKLİ:</span>
                     <span class="payment-warning">Lütfen ödeme şeklinizi seçiniz!</span>
                 </div>
                 <div class="payment-buttons">
@@ -693,7 +718,7 @@
 
             <div id="locationSection" class="location-section" aria-label="Teslimat konumu">
                 <div class="location-title">
-                    <span>Teslimat Konumu (Zorunlu)</span>
+                    <span>TESLİMAT KONUMU (ZORUNLU) :</span>
                     <span class="location-warning">Siparişi onaylamak için lütfen konum seçiniz!</span>
                 </div>
                 <div class="location-row">
@@ -945,6 +970,18 @@
                 return normalizeKey(productName + "|" + (optionLabel || "Standart"));
             }
 
+            function buildVariantCartKey(productName, optionLabel, removedContents) {
+                const removed = Array.isArray(removedContents)
+                    ? removedContents.slice().map(function (x) { return String(x).trim(); }).filter(Boolean).sort(function (a, b) { return a.localeCompare(b, "tr"); })
+                    : [];
+                return normalizeKey((productName || "") + "|" + (optionLabel || "Standart") + "|" + removed.join(","));
+            }
+
+            function createUniqueVariantKey(productName, optionLabel, removedContents) {
+                const base = buildVariantCartKey(productName, optionLabel, removedContents);
+                return base + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+            }
+
             function isDrinkCartItem(item) {
                 if (!item) return false;
                 if (item.sectionName === DRINK_SECTION_NAME) return true;
@@ -1063,6 +1100,9 @@
                         productName: meta.productName,
                         optionLabel: meta.optionLabel,
                         unitPrice: meta.unitPrice,
+                        contentsText: meta.contentsText || "",
+                        contentsIngredients: meta.contentsIngredients || "",
+                        removedContents: Array.isArray(meta.removedContents) ? meta.removedContents : [],
                         quantity: 0
                     };
                 }
@@ -1070,6 +1110,33 @@
 
                 cart[cartKey].quantity = (cart[cartKey].quantity || 0) + delta;
                 if (cart[cartKey].quantity <= 0) delete cart[cartKey];
+
+                saveCart(cart);
+            }
+
+            function moveOneUnitToVariant(sourceKey, nextRemovedContents) {
+                const source = cart[sourceKey];
+                if (!source) return;
+                if ((source.quantity || 0) <= 0) return;
+
+                const removed = Array.isArray(nextRemovedContents) ? nextRemovedContents : [];
+                const targetKey = createUniqueVariantKey(source.productName, source.optionLabel, removed);
+
+                source.quantity = (source.quantity || 0) - 1;
+                if (source.quantity <= 0) delete cart[sourceKey];
+
+                // Özelleştirilmiş satırları asla birleştirmeyelim:
+                // aynı içerik tercihi olsa bile her seçim ayrı satır olarak kalsın.
+                cart[targetKey] = {
+                    sectionName: source.sectionName || "Diğer Ürünler",
+                    productName: source.productName,
+                    optionLabel: source.optionLabel,
+                    unitPrice: source.unitPrice,
+                    contentsText: source.contentsText || "",
+                    contentsIngredients: source.contentsIngredients || "",
+                    removedContents: removed.slice(),
+                    quantity: 1
+                };
 
                 saveCart(cart);
             }
@@ -1146,6 +1213,25 @@
                     ];
                 }
 
+                // Bölüme göre bilgilendirme notunu (İçerik/Limon vb.) sepet satırına taşıyacağız.
+                let noteText = "";
+                let ingredientsCsv = "";
+                if (sectionTitleEl && sectionTitleEl.textContent.includes("Porsiyon Menüler")) {
+                    noteText = "İçerik marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.";
+                    ingredientsCsv = "marul, maydanoz, nane, domates, turşu, lavaş";
+                } else if (sectionTitleEl && sectionTitleEl.textContent.includes("Dürüm Çeşitleri")) {
+                    noteText = "İçerik marul, maydanoz, nane, domates, turşu, lavaş ve Ayran ile servis edilir.";
+                    ingredientsCsv = "marul, maydanoz, nane, domates, turşu, lavaş, Ayran";
+                } else if (sectionTitleEl && sectionTitleEl.textContent.includes("Midye Dolma")) {
+                    noteText = "Limon ile servis edilir.";
+                    ingredientsCsv = "Limon";
+                }
+
+                const existingNoteEl = details.querySelector(".menu-note");
+                if (existingNoteEl && existingNoteEl.textContent && existingNoteEl.textContent.trim()) {
+                    noteText = existingNoteEl.textContent.trim();
+                }
+
                 const wrap = document.createElement("div");
                 wrap.className = "add-to-cart-wrap";
 
@@ -1159,6 +1245,8 @@
                     row.dataset.optionLabel = opt.optionLabel;
                     row.dataset.unitPrice = String(opt.unitPrice);
                     row.dataset.sectionName = sectionName;
+                    if (noteText) row.dataset.contentsText = noteText;
+                    if (ingredientsCsv) row.dataset.contentsIngredients = ingredientsCsv;
 
                     const info = document.createElement("div");
                     info.className = "add-to-cart-opt-info";
@@ -1193,15 +1281,6 @@
                 details.appendChild(wrap);
 
                 // Bölüme göre bilgilendirme notu ekle (ürünün altına)
-                let noteText = "";
-                if (sectionTitleEl && sectionTitleEl.textContent.includes("Porsiyon Menüler")) {
-                    noteText = "İçerik marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.";
-                } else if (sectionTitleEl && sectionTitleEl.textContent.includes("Dürüm Çeşitleri")) {
-                    noteText = "İçerik marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.";
-                } else if (sectionTitleEl && sectionTitleEl.textContent.includes("Midye Dolma")) {
-                    noteText = "Limon ile servis edilir.";
-                }
-
                 if (noteText && !details.querySelector(".menu-note")) {
                     const note = document.createElement("div");
                     note.className = "menu-note";
@@ -1323,7 +1402,7 @@
                         lines.push("");
                         lines.push("[" + section + "]");
                         let midyeTotalAdet = 0;
-                        groups[section].forEach(function (item) {
+                        groups[section].forEach(function (item, idx) {
                             const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
                             if (isMidyeLineItem(item)) {
                                 const pack = parseMidyeAdetPerPack(item.optionLabel);
@@ -1336,6 +1415,15 @@
                                     ? (item.productName + " - " + item.optionLabel)
                                     : item.productName;
                                 lines.push("• " + title + " | Adet: " + item.quantity + " | Tutar: " + formatTL(lineTotal));
+                            }
+                            if (item.removedContents && item.removedContents.length > 0) {
+                                const prefText = item.removedContents.map(function (name) {
+                                    return "[x] " + name + " (İstenmiyor)";
+                                }).join(" | ");
+                                lines.push("  İçerik Tercihi: " + prefText);
+                            }
+                            if (idx < groups[section].length - 1) {
+                                lines.push("");
                             }
                         });
                         if (section === "Midye Dolma" && midyeTotalAdet > 0) {
@@ -1356,7 +1444,17 @@
 
             function renderCartDrawer() {
                 const items = Object.entries(cart).map(function (pair) {
-                    return { key: pair[0], productName: pair[1].productName, optionLabel: pair[1].optionLabel, unitPrice: pair[1].unitPrice, quantity: pair[1].quantity };
+                    return {
+                        key: pair[0],
+                        productName: pair[1].productName,
+                        optionLabel: pair[1].optionLabel,
+                        unitPrice: pair[1].unitPrice,
+                        quantity: pair[1].quantity,
+                        sectionName: pair[1].sectionName,
+                        contentsText: pair[1].contentsText,
+                        contentsIngredients: pair[1].contentsIngredients || "",
+                        removedContents: Array.isArray(pair[1].removedContents) ? pair[1].removedContents : []
+                    };
                 });
 
                 const count = cartCount();
@@ -1371,7 +1469,12 @@
                 }
 
                 items.sort(function (a, b) {
-                    return a.productName.localeCompare(b.productName, "tr");
+                    const nameCmp = a.productName.localeCompare(b.productName, "tr");
+                    if (nameCmp !== 0) return nameCmp;
+
+                    const aOpt = a.optionLabel || "Standart";
+                    const bOpt = b.optionLabel || "Standart";
+                    return aOpt.localeCompare(bOpt, "tr");
                 });
 
                 const midyeItems = items.filter(isMidyeLineItem);
@@ -1384,25 +1487,76 @@
                 els.cartItems.innerHTML = items.map(function (item) {
                     const lineTotal = (item.unitPrice || 0) * (item.quantity || 0);
                     let title;
-                    let subLine;
+                    let pricingLine;
+                    let subHtml;
+                    let contentsLine = item.contentsText ? escapeHtml(item.contentsText) : "";
+                    if (!contentsLine) {
+                        if (item.sectionName && item.sectionName.includes("Porsiyon Menüler")) {
+                            contentsLine = escapeHtml("İçerik marul, maydanoz, nane, domates, turşu ve lavaş ile servis edilir.");
+                        } else if (item.sectionName && item.sectionName.includes("Dürüm Çeşitleri")) {
+                            contentsLine = escapeHtml("İçerik marul, maydanoz, nane, domates, turşu, lavaş ve Ayran ile servis edilir.");
+                        } else if (item.sectionName && item.sectionName.includes("Midye Dolma")) {
+                            contentsLine = escapeHtml("Limon ile servis edilir.");
+                        }
+                    }
                     if (isMidyeLineItem(item)) {
                         const pack = parseMidyeAdetPerPack(item.optionLabel);
                         const q = item.quantity || 0;
                         const totalAdet = pack * q;
                         title = "Midye Dolma";
-                        subLine = pack + "×" + q + " = " + totalAdet + " adet | Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
+                        pricingLine = pack + "×" + q + " = " + totalAdet + " adet | Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
                     } else {
                         title = item.optionLabel && item.optionLabel !== "Standart"
                             ? (item.productName + " - " + item.optionLabel)
                             : item.productName;
-                        subLine = "Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
+                        pricingLine = "Birim: " + formatTL(item.unitPrice) + " | Satır: " + formatTL(lineTotal);
                     }
 
+                    const removedContents = Array.isArray(item.removedContents) ? item.removedContents : [];
+                    let contentsIngredients = [];
+                    if (item.contentsIngredients) {
+                        contentsIngredients = String(item.contentsIngredients)
+                            .split(",")
+                            .map(function (s) { return s.trim(); })
+                            .filter(Boolean);
+                    }
+
+                    // Eski sepet kayıtları için (contentsIngredients yoksa) sectionName'e göre listeyi çıkar.
+                    if (!contentsIngredients.length && item.sectionName) {
+                        if (item.sectionName.includes("Porsiyon Menüler")) {
+                            contentsIngredients = ["marul", "maydanoz", "nane", "domates", "turşu", "lavaş"];
+                        } else if (item.sectionName.includes("Dürüm Çeşitleri")) {
+                            contentsIngredients = ["marul", "maydanoz", "nane", "domates", "turşu", "lavaş", "Ayran"];
+                        } else if (item.sectionName.includes("Midye Dolma")) {
+                            contentsIngredients = ["Limon"];
+                        }
+                    }
+
+                    let removeControlsHtml = "";
+                    if (contentsIngredients.length > 0) {
+                        removeControlsHtml =
+                            '<div class="contents-remove-wrap">' +
+                            '  <div class="contents-remove-title">İçerikten çıkarmak istedikleriniz</div>' +
+                            '  <div class="contents-remove-list">' +
+                            contentsIngredients.map(function (ing) {
+                                const checked = removedContents.includes(ing);
+                                return '' +
+                                    '<label class="contents-remove-item">' +
+                                    '  <input type="checkbox" data-cart-key="' + escapeHtml(item.key) + '" data-ingredient="' + escapeHtml(ing) + '"' + (checked ? " checked" : "") + '>' +
+                                    '  ' + escapeHtml(ing) +
+                                    '</label>';
+                            }).join("") +
+                            '  </div>' +
+                            '</div>';
+                    }
+
+                    subHtml = contentsLine ? (contentsLine + "<br>" + escapeHtml(pricingLine)) : escapeHtml(pricingLine);
+                    subHtml = removeControlsHtml ? (subHtml + removeControlsHtml) : subHtml;
                     return '' +
                         '<div class="cart-item-row" data-cart-key="' + escapeHtml(item.key) + '">' +
                         '  <div class="cart-item-main">' +
                         '    <div class="cart-item-title">' + escapeHtml(title) + '</div>' +
-                        '    <div class="cart-item-sub">' + escapeHtml(subLine) + '</div>' +
+                        '    <div class="cart-item-sub">' + subHtml + '</div>' +
                         '  </div>' +
                         '  <div class="cart-item-right">' +
                         '    <div class="cart-qty-controls">' +
@@ -1432,12 +1586,18 @@
                 if (addBtn) {
                     const row = addBtn.closest(".add-to-cart-opt-row");
                     if (!row) return;
-                    const key = row.dataset.cartKey;
+                    const hasCustomizableContents = !!(row.dataset.contentsIngredients && row.dataset.contentsIngredients.trim());
+                    const key = hasCustomizableContents
+                        ? buildVariantCartKey(row.dataset.productName, row.dataset.optionLabel, [])
+                        : row.dataset.cartKey;
                     addOrUpdateCart(key, +1, {
                         sectionName: row.dataset.sectionName,
                         productName: row.dataset.productName,
                         optionLabel: row.dataset.optionLabel,
-                        unitPrice: Number(row.dataset.unitPrice) || 0
+                        unitPrice: Number(row.dataset.unitPrice) || 0,
+                        contentsText: row.dataset.contentsText || "",
+                        contentsIngredients: row.dataset.contentsIngredients || "",
+                        removedContents: []
                     });
                     updateAll();
                     return;
@@ -1478,6 +1638,55 @@
                     updateAll();
                     return;
                 }
+            });
+
+            // İçerik çıkarma (checkbox) - sepet satırını günceller
+            document.addEventListener("change", function (e) {
+                const el = e.target;
+                if (!el || el.tagName !== "INPUT" || el.type !== "checkbox") return;
+                const cartKey = el.getAttribute("data-cart-key");
+                const ingredient = el.getAttribute("data-ingredient");
+                if (!cartKey || !ingredient) return;
+                if (!cart[cartKey]) return;
+
+                const current = cart[cartKey];
+                const prevRemoved = Array.isArray(current.removedContents) ? current.removedContents.slice() : [];
+                const removed = Array.isArray(current.removedContents) ? current.removedContents.slice() : [];
+                const hasIt = removed.includes(ingredient);
+                if (el.checked && !hasIt) removed.push(ingredient);
+                if (!el.checked && hasIt) {
+                    const idx = removed.indexOf(ingredient);
+                    removed.splice(idx, 1);
+                }
+
+                // Aynı satırda tek adet varsa, başka satıra taşımadan doğrudan güncelle.
+                // Sadece adet > 1 iken bir adedi ayırıp yeni varyanta taşı.
+                if (isMidyeLineItem(current)) {
+                    // Midye Dolma'da limon tercihi satırın tamamına toplu uygulansın.
+                    current.removedContents = removed.slice();
+                    saveCart(cart);
+                } else if ((current.quantity || 0) > 1) {
+                    const restQty = (current.quantity || 0) - 1;
+                    current.quantity = 1;
+                    current.removedContents = removed.slice();
+
+                    const remainderKey = createUniqueVariantKey(current.productName, current.optionLabel, prevRemoved);
+                    cart[remainderKey] = {
+                        sectionName: current.sectionName || "Diğer Ürünler",
+                        productName: current.productName,
+                        optionLabel: current.optionLabel,
+                        unitPrice: current.unitPrice,
+                        contentsText: current.contentsText || "",
+                        contentsIngredients: current.contentsIngredients || "",
+                        removedContents: prevRemoved.slice(),
+                        quantity: restQty
+                    };
+                    saveCart(cart);
+                } else {
+                    current.removedContents = removed.slice();
+                    saveCart(cart);
+                }
+                updateAll();
             });
 
             // Sticky / Drawer butonları
