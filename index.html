@@ -67,8 +67,10 @@
             box-shadow: 0 18px 50px rgba(0,0,0,0.18);
             z-index: 1002;
             display: none;
+            height: min(82vh, calc(100vh - var(--cart-action-bar-height) - 18px));
+            overflow: hidden;
         }
-        .cart-drawer.open { display: block; }
+        .cart-drawer.open { display: flex; flex-direction: column; }
         .cart-drawer-header {
             padding: 14px 16px;
             border-bottom: 1px solid #f2f2f2;
@@ -77,13 +79,26 @@
             justify-content: space-between;
             gap: 12px;
         }
+        .cart-grab {
+            width: 54px;
+            height: 5px;
+            border-radius: 999px;
+            background: #ddd;
+            margin: 8px auto 2px;
+        }
+        .cart-scroll-area {
+            flex: 1 1 auto;
+            overflow: auto;
+            min-height: 0;
+            padding-bottom: 8px;
+        }
         .cart-title { font-weight: 1000; color: #bc1818; font-size: 16px; }
         .cart-subtitle { font-size: 12px; color: #666; margin-top: 3px; }
         .cart-close-btn {
             border: none; background: #f2f2f2; width: 36px; height: 36px; border-radius: 12px;
             cursor: pointer; color: #333; font-size: 22px; line-height: 36px; font-weight: 900;
         }
-        .cart-list { padding: 10px 16px; max-height: 48vh; overflow: auto; }
+        .cart-list { padding: 10px 16px; overflow: visible; }
         .cart-empty { padding: 18px 0; text-align: center; color: #999; font-weight: 600; }
         .cart-item-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f6f6f6; }
         .cart-item-title { font-weight: 1000; color: #bc1818; line-height: 1.2; }
@@ -96,7 +111,6 @@
         .cart-actions { padding: 12px 16px 0; display: flex; gap: 10px; }
         .btn-clear { background: #666; }
         .menu-note { margin-top: 10px; font-size: 12px; color: #777; line-height: 1.35; font-weight: 600; }
-        .btn-disabled { opacity: .55; pointer-events: none; filter: grayscale(0.12); }
 
         /* Ödeme şekli */
         .payment-section { padding: 10px 16px 0; }
@@ -118,7 +132,7 @@
             text-transform: none;
             letter-spacing: 0;
             color: #bc1818;
-            animation: paymentWarnBlink 1.25s ease-in-out infinite;
+            animation: paymentWarnBlink 1s ease-in-out 10;
         }
         @keyframes paymentWarnBlink {
             0%, 100% { opacity: 1; }
@@ -143,7 +157,26 @@
 
         /* Konum seçimi */
         .location-section { padding: 10px 16px 0; border-top: 1px dashed rgba(0,0,0,.07); }
-        .location-title { font-size: 12px; color: #777; font-weight: 900; text-transform: uppercase; letter-spacing: .2px; margin-bottom: 8px; }
+        .location-title {
+            font-size: 12px;
+            color: #777;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .location-warning {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: none;
+            letter-spacing: 0;
+            color: #bc1818;
+            animation: paymentWarnBlink 1s ease-in-out 10;
+        }
         .location-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .location-btn {
             border: 1px solid #eee;
@@ -158,6 +191,60 @@
         .location-status { font-size: 12px; color: #666; font-weight: 700; }
         .location-status.ok { color: #1b8d39; }
         .location-status.err { color: #bc1818; }
+
+        /* Sepet içi içecek önerileri */
+        .upsell-section { padding: 12px 16px 0; border-top: 1px dashed rgba(0,0,0,.07); }
+        .upsell-title { font-size: 13px; font-weight: 1000; color: #bc1818; }
+        .upsell-sub { font-size: 12px; color: #777; margin-top: 4px; font-weight: 700; }
+        .upsell-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .upsell-item {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #fff;
+        }
+        .upsell-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .upsell-thumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; background: #f2f2f2; border: 1px solid #f0f0f0; }
+        .upsell-name { font-size: 13px; font-weight: 900; color: #333; line-height: 1.2; }
+        .upsell-price { font-size: 12px; color: #666; margin-top: 3px; font-weight: 800; }
+        .upsell-add-btn {
+            border: 1px solid rgba(188,24,24,0.2);
+            color: #bc1818;
+            background: rgba(188,24,24,0.08);
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-weight: 900;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .upsell-add-btn:active { transform: translateY(1px); }
+        .toast-msg {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: calc(var(--cart-action-bar-height, 68px) + 12px);
+            max-width: calc(100% - 24px);
+            width: fit-content;
+            background: #bc1818;
+            color: #fff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            box-shadow: 0 12px 24px rgba(0,0,0,.2);
+            z-index: 1010;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-3px);
+        }
 
         /* Canva/AI tasarım dokunuşları (yalnızca görünüm) */
         :root{
@@ -336,6 +423,17 @@
             padding: 7px 9px;
           }
           .quick-nav .q-icon { margin-right: 4px; }
+          .cart-drawer {
+            width: calc(100% - 14px);
+            border-radius: 14px;
+            height: min(84vh, calc(100vh - var(--cart-action-bar-height) - 10px));
+          }
+          .cart-drawer-header { padding: 11px 12px; }
+          .cart-list { min-height: 100px; padding: 8px 12px; }
+          .cart-total { padding: 8px 12px 0; }
+          .payment-section, .location-section, .upsell-section { padding: 8px 12px 0; }
+          .cart-actions { padding: 10px 12px 0; }
+          .cart-bottom { padding-bottom: 12px; }
         }
     </style>
 </head>
@@ -482,6 +580,7 @@
     </div>
 
     <div id="cartDrawer" class="cart-drawer" aria-hidden="true">
+        <div class="cart-grab" aria-hidden="true"></div>
         <div class="cart-drawer-header">
             <div>
                 <div class="cart-title">Sepet</div>
@@ -489,39 +588,46 @@
             </div>
             <button id="cartCloseBtn" class="cart-close-btn" type="button" aria-label="Kapat">×</button>
         </div>
-        <div id="cartItems" class="cart-list"></div>
-        <div id="cartTotal" class="cart-total"></div>
+        <div class="cart-scroll-area">
+            <div id="cartItems" class="cart-list"></div>
+            <div id="cartTotal" class="cart-total"></div>
 
-        <div id="paymentSection" class="payment-section" aria-label="Ödeme şekli">
-            <div class="payment-title">
-                <span>Ödeme Şekli</span>
-                <span class="payment-warning">Lütfen ödeme şeklinizi seçiniz!</span>
+            <div id="paymentSection" class="payment-section" aria-label="Ödeme şekli">
+                <div class="payment-title">
+                    <span>Ödeme Şekli</span>
+                    <span class="payment-warning">Lütfen ödeme şeklinizi seçiniz!</span>
+                </div>
+                <div class="payment-buttons">
+                    <button id="paymentCashBtn" type="button" class="payment-btn active">Nakit</button>
+                    <button id="paymentCardBtn" type="button" class="payment-btn">Kredi Kartı</button>
+                </div>
             </div>
-            <div class="payment-buttons">
-                <button id="paymentCashBtn" type="button" class="payment-btn active">Nakit</button>
-                <button id="paymentCardBtn" type="button" class="payment-btn">Kredi Kartı</button>
-            </div>
-        </div>
 
-        <div id="locationSection" class="location-section" aria-label="Teslimat konumu">
-            <div class="location-title">Teslimat Konumu (Zorunlu)</div>
-            <div class="location-row">
-                <button id="getLocationBtn" type="button" class="location-btn primary">
-                    <i class="fas fa-location-crosshairs" style="margin-right:6px;"></i> Konumumu Al
-                </button>
-                <button id="clearLocationBtn" type="button" class="location-btn">
-                    <i class="fas fa-xmark" style="margin-right:6px;"></i> Konumu Temizle
-                </button>
-                <span id="locationStatus" class="location-status">Konum seçilmedi.</span>
+            <div id="locationSection" class="location-section" aria-label="Teslimat konumu">
+                <div class="location-title">
+                    <span>Teslimat Konumu (Zorunlu)</span>
+                    <span class="location-warning">Siparişi onaylamak için lütfen konum seçiniz!</span>
+                </div>
+                <div class="location-row">
+                    <button id="getLocationBtn" type="button" class="location-btn primary">
+                        <i class="fas fa-location-crosshairs" style="margin-right:6px;"></i> Konumumu Al
+                    </button>
+                    <button id="clearLocationBtn" type="button" class="location-btn">
+                        <i class="fas fa-xmark" style="margin-right:6px;"></i> Konumu Temizle
+                    </button>
+                    <span id="locationStatus" class="location-status">Konum seçilmedi.</span>
+                </div>
             </div>
-        </div>
 
-        <div class="cart-bottom">
-            <div class="cart-actions">
-                <a id="cartWhatsAppLink" class="btn btn-whatsapp hidden" href="#" target="_blank" rel="noopener">
-                    <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Siparişi Onayla
-                </a>
-                <button id="cartClearBtn" class="btn btn-clear" type="button">Temizle</button>
+            <div id="drinkUpsell" class="upsell-section hidden" aria-label="İçecek önerileri"></div>
+
+            <div class="cart-bottom">
+                <div class="cart-actions">
+                    <a id="cartWhatsAppLink" class="btn btn-whatsapp hidden" href="#" target="_blank" rel="noopener">
+                        <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Siparişi Onayla
+                    </a>
+                    <button id="cartClearBtn" class="btn btn-clear" type="button">Temizle</button>
+                </div>
             </div>
         </div>
     </div>
@@ -532,6 +638,7 @@
             <i class="fas fa-shopping-cart"></i> Sepeti Gör <span id="stickyCartMeta"></span>
         </button>
     </div>
+    <div id="toastMsg" class="toast-msg" role="status" aria-live="polite"></div>
     <div class="footer">© 2026 ÇİĞKÖFTECİ ÖMER USTA - Yenigün Şubesi</div>
 
     <script>
@@ -554,13 +661,29 @@
                 paymentCardBtn: document.getElementById("paymentCardBtn"),
                 getLocationBtn: document.getElementById("getLocationBtn"),
                 clearLocationBtn: document.getElementById("clearLocationBtn"),
-                locationStatus: document.getElementById("locationStatus")
+                locationStatus: document.getElementById("locationStatus"),
+                drinkUpsell: document.getElementById("drinkUpsell"),
+                toastMsg: document.getElementById("toastMsg")
             };
+            let toastTimer = null;
 
             let cart = loadCart();
             const PAYMENT_KEY = "omerusta_payment_v1";
             let paymentMethod = loadPaymentMethod();
             let deliveryLocation = loadDeliveryLocation();
+            const DRINK_SECTION_NAME = "İçecekler";
+            const DRINK_CATALOG = [
+                { productName: "Küçük Ayran", optionLabel: "Standart", unitPrice: 35, image: "kucukayran.jpg?v=1" },
+                { productName: "Büyük Ayran", optionLabel: "Standart", unitPrice: 50, image: "buyukayran.jpg?v=1" },
+                { productName: "Şalgam Suyu (300 ml)", optionLabel: "Acılı", unitPrice: 35, image: "salgam.jpg?v=1" },
+                { productName: "Şalgam Suyu (300 ml)", optionLabel: "Acısız", unitPrice: 35, image: "salgam.jpg?v=1" },
+                { productName: "Sarıyer Kutu Kola (330 ml)", optionLabel: "Standart", unitPrice: 50, image: "kutukola.jpg" },
+                { productName: "Sarıyer Kutu Portakal (330 ml)", optionLabel: "Standart", unitPrice: 50, image: "portakal.jpg" },
+                { productName: "Sarıyer Kutu Karışık Meyve Aromalı Gazoz (330 ml)", optionLabel: "Standart", unitPrice: 50, image: "gazoz.jpg" },
+                { productName: "Litrelik Şalgam", optionLabel: "Standart", unitPrice: 100, image: "litreliksalgam.jpg?v=2" },
+                { productName: "Sarıyer 1LT Kola", optionLabel: "Standart", unitPrice: 65, image: "1ltkola.jpg" },
+                { productName: "Sarıyer 1LT Portakal", optionLabel: "Standart", unitPrice: 65, image: "1ltportakal.jpg" }
+            ];
 
             function loadPaymentMethod() {
                 try {
@@ -615,9 +738,19 @@
 
             function updateLocationUI(message, stateClass) {
                 if (!els.locationStatus) return;
-                els.locationStatus.textContent = message || (hasLocation() ? "Konum alindi." : "Konum secilmedi.");
+                els.locationStatus.textContent = message || (hasLocation() ? "Konum alındı." : "Konum seçilmedi.");
                 els.locationStatus.classList.remove("ok", "err");
                 if (stateClass) els.locationStatus.classList.add(stateClass);
+            }
+
+            function showToast(message) {
+                if (!els.toastMsg) return;
+                els.toastMsg.textContent = message;
+                els.toastMsg.classList.add("show");
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () {
+                    els.toastMsg.classList.remove("show");
+                }, 2400);
             }
 
             function formatCoord(v) {
@@ -627,29 +760,29 @@
             function setDeliveryLocation(lat, lng) {
                 deliveryLocation = { lat: Number(lat), lng: Number(lng), at: Date.now() };
                 saveDeliveryLocation(deliveryLocation);
-                updateLocationUI("Konum alindi: " + formatCoord(lat) + ", " + formatCoord(lng), "ok");
+                updateLocationUI("Konum alındı: " + formatCoord(lat) + ", " + formatCoord(lng), "ok");
                 updateWhatsAppHref();
             }
 
             function clearDeliveryLocation() {
                 deliveryLocation = null;
                 saveDeliveryLocation(null);
-                updateLocationUI("Konum secilmedi.");
+                updateLocationUI("Konum seçilmedi.");
                 updateWhatsAppHref();
             }
 
             function requestDeliveryLocation() {
                 if (!navigator.geolocation) {
-                    updateLocationUI("Bu cihaz konum destegi sunmuyor.", "err");
+                    updateLocationUI("Bu cihaz konum desteği sunmuyor.", "err");
                     return;
                 }
-                updateLocationUI("Konum aliniyor...");
+                updateLocationUI("Konum alınıyor...");
                 navigator.geolocation.getCurrentPosition(
                     function (pos) {
                         setDeliveryLocation(pos.coords.latitude, pos.coords.longitude);
                     },
                     function () {
-                        updateLocationUI("Konum izni gerekli. Lutfen izin verin.", "err");
+                        updateLocationUI("Konum izni gerekli. Lütfen izin verin.", "err");
                     },
                     { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
                 );
@@ -682,6 +815,87 @@
                     .replace(/[çğıöşü]/g, function (m) { return map[m] || m; })
                     .replace(/[^a-z0-9]+/g, "_")
                     .replace(/^_+|_+$/g, "");
+            }
+
+            function getCartKeyFor(productName, optionLabel) {
+                return normalizeKey(productName + "|" + (optionLabel || "Standart"));
+            }
+
+            function isDrinkCartItem(item) {
+                if (!item) return false;
+                if (item.sectionName === DRINK_SECTION_NAME) return true;
+                const name = String(item.productName || "").toLowerCase();
+                return name.includes("ayran") || name.includes("şalgam") || name.includes("kola") || name.includes("gazoz") || name.includes("portakal") || name.includes("limonata") || name.includes("enerji");
+            }
+
+            function hasAnyDrinkInCart() {
+                return Object.values(cart).some(isDrinkCartItem);
+            }
+
+            function pickDrinkSuggestions() {
+                const total = cartTotal();
+                let pool;
+                if (total >= 500) {
+                    pool = DRINK_CATALOG.filter(function (d) {
+                        return d.productName.includes("1LT") || d.productName.includes("Litrelik");
+                    });
+                } else if (total >= 260) {
+                    pool = DRINK_CATALOG.filter(function (d) {
+                        return d.unitPrice >= 50 && d.unitPrice <= 70;
+                    });
+                } else {
+                    pool = DRINK_CATALOG.filter(function (d) {
+                        return d.unitPrice <= 50;
+                    });
+                }
+
+                const dedupByProduct = {};
+                pool.forEach(function (d) {
+                    // Aynı ürünü (ör. Şalgam acılı/acısız) aynı anda çift göstermeyelim.
+                    if (!dedupByProduct[d.productName]) dedupByProduct[d.productName] = d;
+                });
+                const unique = Object.values(dedupByProduct);
+                const rot = Math.abs(Math.round(total + cartCount())) % Math.max(1, unique.length);
+                const rotated = unique.slice(rot).concat(unique.slice(0, rot));
+                return rotated.slice(0, 3);
+            }
+
+            function renderDrinkUpsell() {
+                if (!els.drinkUpsell) return;
+                const count = cartCount();
+                if (count <= 0 || hasAnyDrinkInCart()) {
+                    els.drinkUpsell.classList.add("hidden");
+                    els.drinkUpsell.innerHTML = "";
+                    return;
+                }
+                const suggestions = pickDrinkSuggestions();
+                if (!suggestions.length) {
+                    els.drinkUpsell.classList.add("hidden");
+                    els.drinkUpsell.innerHTML = "";
+                    return;
+                }
+
+                els.drinkUpsell.classList.remove("hidden");
+                els.drinkUpsell.innerHTML =
+                    '<div class="upsell-title">Siparişinizin yanına iyi gider</div>' +
+                    '<div class="upsell-sub">Tek dokunuşla sepetinize ekleyin.</div>' +
+                    '<div class="upsell-list">' +
+                    suggestions.map(function (item) {
+                        const key = getCartKeyFor(item.productName, item.optionLabel);
+                        const optionText = item.optionLabel && item.optionLabel !== "Standart" ? (" - " + item.optionLabel) : "";
+                        return '' +
+                            '<div class="upsell-item">' +
+                            '  <div class="upsell-main">' +
+                            '    <img class="upsell-thumb" src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.productName) + '">' +
+                            '    <div>' +
+                            '      <div class="upsell-name">' + escapeHtml(item.productName + optionText) + '</div>' +
+                            '      <div class="upsell-price">' + formatTL(item.unitPrice) + '</div>' +
+                            '    </div>' +
+                            '  </div>' +
+                            '  <button type="button" class="upsell-add-btn" data-upsell-key="' + escapeHtml(key) + '">Sepete Ekle</button>' +
+                            '</div>';
+                    }).join("") +
+                    '</div>';
             }
 
             function loadCart() {
@@ -927,7 +1141,7 @@
                     lines.push("Teslimat konumu: " + formatCoord(lat) + ", " + formatCoord(lng));
                     lines.push("Harita linki: https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng);
                 } else {
-                    lines.push("Teslimat konumu: SECILMEDI");
+                    lines.push("Teslimat konumu: Seçilmedi");
                 }
                 lines.push("");
                 lines.push("Sipariş Detayı:");
@@ -973,9 +1187,7 @@
 
                 const message = lines.join("\n");
                 els.cartWhatsAppLink.href = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
-                const canSend = hasLocation();
-                els.cartWhatsAppLink.classList.toggle("btn-disabled", !canSend);
-                els.cartWhatsAppLink.title = canSend ? "Siparisi WhatsApp'tan onayla" : "Onay icin once konum secin";
+                els.cartWhatsAppLink.title = hasLocation() ? "Siparişi WhatsApp'tan onayla" : "Onay için önce lütfen konum seçin";
             }
 
             function renderCartDrawer() {
@@ -1029,6 +1241,7 @@
                 updateSticky();
                 updateCardControls();
                 renderCartDrawer();
+                renderDrinkUpsell();
             }
 
             // Ürün kartı: Sepete Ekle / + / -
@@ -1062,6 +1275,24 @@
                     const row = plusBtn.closest("[data-cart-key]");
                     if (!row) return;
                     addOrUpdateCart(row.dataset.cartKey, +1);
+                    updateAll();
+                    return;
+                }
+
+                const upsellBtn = e.target.closest(".upsell-add-btn");
+                if (upsellBtn) {
+                    const key = upsellBtn.getAttribute("data-upsell-key");
+                    if (!key) return;
+                    const selected = DRINK_CATALOG.find(function (d) {
+                        return getCartKeyFor(d.productName, d.optionLabel) === key;
+                    });
+                    if (!selected) return;
+                    addOrUpdateCart(key, +1, {
+                        sectionName: DRINK_SECTION_NAME,
+                        productName: selected.productName,
+                        optionLabel: selected.optionLabel || "Standart",
+                        unitPrice: selected.unitPrice
+                    });
                     updateAll();
                     return;
                 }
@@ -1106,7 +1337,8 @@
                     if (cartCount() <= 0) return;
                     if (!hasLocation()) {
                         e.preventDefault();
-                        updateLocationUI("Siparis onayi icin once konum secin.", "err");
+                        updateLocationUI("Konum seçilmedi. Onay için önce lütfen konum seçin.", "err");
+                        showToast("Konum seçilmedi. Onay için önce lütfen konum seçin.");
                     }
                 });
             }
@@ -1131,9 +1363,9 @@
             buildAllControls();
             updatePaymentUI();
             if (hasLocation()) {
-                updateLocationUI("Konum alindi: " + formatCoord(deliveryLocation.lat) + ", " + formatCoord(deliveryLocation.lng), "ok");
+                updateLocationUI("Konum alındı: " + formatCoord(deliveryLocation.lat) + ", " + formatCoord(deliveryLocation.lng), "ok");
             } else {
-                updateLocationUI("Konum secilmedi.");
+                updateLocationUI("Konum seçilmedi.");
             }
             updateAll();
         })();
